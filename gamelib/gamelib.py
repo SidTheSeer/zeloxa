@@ -4,6 +4,7 @@ import os
 
 pygame.font.init()
 pygame.display.init()
+pygame.mixer.init()
 
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -26,7 +27,7 @@ class Director():
         self.screenHeight = int(pygame.display.Info().current_h)
 
         # Initialise screen surface
-        self.screen = pygame.display.set_mode((800, 800))
+        self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
 
         # Set game name
         pygame.display.set_caption(gameName)
@@ -97,6 +98,7 @@ class Director():
             if command[0] == 'loadScene':
                 self.loadScene(command[1])
 
+
 # /===================================/
 #  Base scene class
 # /===================================/
@@ -119,6 +121,7 @@ class Scene():
     def onDraw(self, screen):
         # Draw surfaces within scene
         raise NotImplementedError("onDraw not defined in subclass")
+
 
 # /===================================/
 #  Base GUI Class
@@ -196,6 +199,7 @@ class Text(GUIElement):
 
     def handleEvent(self, event):
         pass
+
 
 # /===================================/
 #  General button class
@@ -383,6 +387,7 @@ class Button(GUIElement):
 #  General image class
 # /===================================/
 
+
 class Image(GUIElement):
     def __init__(self, rect=None, image=None):
         super().__init__(rect)
@@ -416,6 +421,7 @@ class Image(GUIElement):
 #  Menu scene class
 # /===================================/
 
+
 class MenuScene(Scene):
     def __init__(self, director=None, buttons=None, background=None, music=None):
         super().__init__(director)
@@ -433,10 +439,13 @@ class MenuScene(Scene):
                 raise Exception('Image is not BackgroundImage')
 
         if music is not None:
-            if music is list:
-                self.music = os.path.join(*music)
+            if type(music) is list:
+                self.music = pygame.mixer.Sound(os.path.join(*music))
             else:
                 raise Exception('Music is not list')
+
+        if music is not None:
+            self.music.play()
 
     def onUpdate(self):
         pass
@@ -459,6 +468,7 @@ class MenuScene(Scene):
 
     def handleCommand(self):
         pass
+
 
 # /===================================/
 #  Background image class
@@ -510,6 +520,7 @@ class BackgroundImage(Image):
 
         self.surface.blit(scaledImage, scaledRect)
 
+
 # /===================================/
 #  Main menu button class
 # /===================================/
@@ -529,6 +540,13 @@ class MainMenuButton(Button):
             self.moveCommand = commands['move'] if 'move' in commands else None
             self.downCommand = commands['down'] if 'down' in commands else None
             self.upCommand = commands['up'] if 'up' in commands else None
+        else:
+            self.clickCommand = None
+            self.enterCommand = None
+            self.exitCommand = None
+            self.moveCommand = None
+            self.downCommand = None
+            self.upCommand = None
 
     def mouseClick(self, event):
         if self.clickCommand is not None:
@@ -550,3 +568,42 @@ class MainMenuButton(Button):
 
     def mouseUp(self, event):
         pass
+
+
+# /===================================/
+#  Basic game scene class
+# /===================================/
+
+
+class GameScene(Scene):
+    def __init__(self, director=None):
+        super().__init__(director)
+
+        self.entities = []
+        self.level = []
+
+    def onEvent(self, events):
+        for event in events:
+            pass
+
+    def onUpdate(self):
+        pass
+
+    def onDraw(self, screen):
+        pass
+
+    def handleCommand(self, command):
+        pass
+
+# /===================================/
+#  Basic game scene class
+# /===================================/
+
+
+'''class GameObject:
+    def __init__(self, scene=None, rect=[0, 0, 100, 100]):
+        self.scene = scene
+        self.x = rect[0]
+        self.y = rect[1]
+        self.width = rect[2]
+        self.height = rect[3]'''
