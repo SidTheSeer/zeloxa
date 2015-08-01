@@ -2,6 +2,7 @@ import pygame
 import gamelib.gamelib as gamelib
 import scenes as zeloxa
 
+
 def main():
     # Initalise director
     director = gamelib.Director('Zeloxa')

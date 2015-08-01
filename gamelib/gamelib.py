@@ -18,8 +18,9 @@ DEFAULT_FONT = pygame.font.SysFont('Menlo', 40)
 #  Director
 # /===================================/
 
+
 class Director():
-    def __init__(self, gameName = None):
+    def __init__(self, gameName=None):
         # Get screen dimensions
         self.screenWidth = int(pygame.display.Info().current_w)
         self.screenHeight = int(pygame.display.Info().current_h)
@@ -100,10 +101,11 @@ class Director():
 #  Base scene class
 # /===================================/
 
+
 class Scene():
-    def __init__(self, director = None):
+    def __init__(self, director=None):
         # Set director reference
-        if director != None:
+        if director is not None:
             self.director = director
 
     def onEvent(self, event):
@@ -122,8 +124,9 @@ class Scene():
 #  Base GUI Class
 # /===================================/
 
+
 class GUIElement:
-    def __init__(self, rect = None):
+    def __init__(self, rect=None):
         # Default to a 100x100 rect
         if rect is None:
             self._rect = pygame.rect.Rect(0, 0, 100, 100)
@@ -143,8 +146,9 @@ class GUIElement:
 #  General text class
 # /===================================/
 
+
 class Text(GUIElement):
-    def __init__(self, rect = None, caption = None, font = None, fontColor = WHITE, centered = True):
+    def __init__(self, rect=None, caption=None, font=None, fontColor=WHITE, centered=True):
         super().__init__(rect)
 
         if caption is None:
@@ -197,8 +201,9 @@ class Text(GUIElement):
 #  General button class
 # /===================================/
 
+
 class Button(GUIElement):
-    def __init__(self, rect = None, caption = None, font = None, fontColor = WHITE, backgroundColor = BLACK, border = None, normal = None, toggle = None, highlight = None):
+    def __init__(self, rect=None, caption=None, font=None, fontColor=WHITE, backgroundColor=BLACK, border=None, normal=None, toggle=None, highlight=None):
 
         super().__init__(rect)
 
@@ -215,7 +220,7 @@ class Button(GUIElement):
             self._font = font
 
         if border is None:
-            self._border = None#{'normal': [0, None], 'highlight': [0, None], 'toggle': [0, None]}
+            self._border = None  # {'normal': [0, None], 'highlight': [0, None], 'toggle': [0, None]}
         else:
             self._border = border
 
@@ -281,7 +286,7 @@ class Button(GUIElement):
         self.toggleSurface.blit(renderedText, captionRect)
         self.highlightSurface.blit(renderedText, captionRect)
 
-        if self._border != None:
+        if self._border is not None:
             pygame.draw.rect(self.normalSurface, self._border['normal']['color'], pygame.Rect((0, 0, w, h)), self._border['normal']['width'])
             pygame.draw.rect(self.toggleSurface, self._border['toggle']['color'], pygame.Rect((0, 0, w, h)), self._border['toggle']['width'])
             pygame.draw.rect(self.highlightSurface, self._border['highlight']['color'], pygame.Rect((0, 0, w, h)), self._border['highlight']['width'])
@@ -332,11 +337,7 @@ class Button(GUIElement):
         if hasExited:
             self.mouseExit(eventObject)
 
-
-        #if self._rect.collidepoint(eventObject.pos):
-        #    print('on button!')
-
-    def assignSurfaces(self, normal, toggle = None, highlight = None):
+    def assignSurfaces(self, normal, toggle=None, highlight=None):
 
         # If toggle or highlight surface or reference not sent
         if toggle is None:
@@ -361,23 +362,29 @@ class Button(GUIElement):
 
     def mouseClick(self, event):
         raise NotImplementedError("mouseClick not defined in subclass")
+
     def mouseEnter(self, event):
         raise NotImplementedError("mouseEnter not defined in subclass")
+
     def mouseExit(self, event):
         raise NotImplementedError("mouseExit not defined in subclass")
+
     def mouseMove(self, event):
         raise NotImplementedError("mouseMove not defined in subclass")
+
     def mouseDown(self, event):
         raise NotImplementedError("mouseDown not defined in subclass")
+
     def mouseUp(self, event):
         raise NotImplementedError("mouseUp not defined in subclass")
+
 
 # /===================================/
 #  General image class
 # /===================================/
 
 class Image(GUIElement):
-    def __init__(self, rect = None, image = None):
+    def __init__(self, rect=None, image=None):
         super().__init__(rect)
 
         if image is None:
@@ -401,7 +408,7 @@ class Image(GUIElement):
 # /===================================/
 #  Extended classes
 # /===================================/
-# 
+#
 # From this point on, all classes will be classes to
 # extended classes from the base classes above
 
@@ -410,22 +417,22 @@ class Image(GUIElement):
 # /===================================/
 
 class MenuScene(Scene):
-    def __init__(self, director = None, buttons = None, background = None, music = None):
+    def __init__(self, director=None, buttons=None, background=None, music=None):
         super().__init__(director)
 
-        if buttons != None:
+        if buttons is not None:
             if type(buttons) is list:
                 self.buttons = buttons
             else:
                 raise Exception('Buttons is not a list')
 
-        if background != None:
+        if background is not None:
             if type(background) is BackgroundImage:
                 self.background = background
             else:
                 raise Exception('Image is not BackgroundImage')
 
-        if music != None:
+        if music is not None:
             if music is list:
                 self.music = os.path.join(*music)
             else:
@@ -457,8 +464,9 @@ class MenuScene(Scene):
 #  Background image class
 # /===================================/
 
+
 class BackgroundImage(Image):
-    def __init__(self, rect = None, image = None, imageType = None):
+    def __init__(self, rect=None, image=None, imageType=None):
         if imageType is None:
             self._imageType = 'static'
         elif type(imageType) is str:
@@ -506,9 +514,10 @@ class BackgroundImage(Image):
 #  Main menu button class
 # /===================================/
 
+
 class MainMenuButton(Button):
     def __init__(self, scene, commands, rect, caption):
-        borderConfig = {'normal':{'color':WHITE,'width':20},'toggle':{'color':BLUE,'width':20},'highlight':{'color':RED,'width':20}}
+        borderConfig = {'normal': {'color': WHITE, 'width': 20}, 'toggle': {'color': BLUE, 'width': 20}, 'highlight': {'color': RED, 'width': 20}}
         super().__init__(rect, caption, DEFAULT_FONT, WHITE, BLACK, borderConfig)
 
         self.scene = scene
@@ -516,21 +525,21 @@ class MainMenuButton(Button):
         if type(commands) is dict:
             self.clickCommand = commands['click'] if 'click' in commands else None
             self.enterCommand = commands['enter'] if 'enter' in commands else None
-            self.exitCommand  = commands['exit'] if 'exit' in commands else None
-            self.moveCommand  = commands['move'] if 'move' in commands else None
-            self.downCommand  = commands['down'] if 'down' in commands else None
-            self.upCommand    = commands['up'] if 'up' in commands else None
+            self.exitCommand = commands['exit'] if 'exit' in commands else None
+            self.moveCommand = commands['move'] if 'move' in commands else None
+            self.downCommand = commands['down'] if 'down' in commands else None
+            self.upCommand = commands['up'] if 'up' in commands else None
 
     def mouseClick(self, event):
-        if self.clickCommand != None:
+        if self.clickCommand is not None:
             self.scene.director.handleCommand(self.clickCommand)
 
     def mouseEnter(self, event):
-        #pygame.mouse.set_cursor(*cursors.hover)
+        # pygame.mouse.set_cursor(*cursors.hover)
         pass
 
     def mouseExit(self, event):
-        #pygame.mouse.set_cursor(*cursors.normal)
+        # pygame.mouse.set_cursor(*cursors.normal)
         pass
 
     def mouseMove(self, event):
@@ -541,4 +550,3 @@ class MainMenuButton(Button):
 
     def mouseUp(self, event):
         pass
-
