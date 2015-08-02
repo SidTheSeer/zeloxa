@@ -36,7 +36,7 @@ class Director():
         self.scene = None
         self.quitFlag = False
         self.clock = pygame.time.Clock()
-        self.scenes = list
+        self.scenes = {}
 
     def loop(self):
         # Main game loop
@@ -74,16 +74,16 @@ class Director():
     def addScenes(self, scenes):
         # If scenes is a list
         if type(scenes) is list:
-            # Set property for scenes
-            self.scenes = scenes
-
-            # For each scene pass a director reference
-            for scene in self.scenes:
+            for scene in scenes:
+                # For each scene pass a director reference
                 scene.director = self
 
-    def loadScene(self, sceneNumber):
+                # Make scenes accessible by name
+                self.scenes[str(scene.name)] = scene
+
+    def loadScene(self, sceneName):
         # Set the active scene for the main game loop
-        self.activeScene = self.scenes[sceneNumber]
+        self.activeScene = self.scenes[sceneName]
 
         # Pass a director reference to the scene
         self.activeScene.director = self
@@ -97,6 +97,8 @@ class Director():
         if type(command) is list:
             if command[0] == 'loadScene':
                 self.loadScene(command[1])
+            elif command[0] == 'quit':
+                self.quit()
 
 
 # /===================================/
@@ -105,10 +107,13 @@ class Director():
 
 
 class Scene():
-    def __init__(self, director=None):
+    def __init__(self, director=None, name=None):
         # Set director reference
         if director is not None:
             self.director = director
+
+        if name is not None and type(name) is str:
+            self.name = name
 
     def onEvent(self, event):
         # Pass events to scene for processing
@@ -423,8 +428,8 @@ class Image(GUIElement):
 
 
 class MenuScene(Scene):
-    def __init__(self, director=None, buttons=None, background=None, music=None):
-        super().__init__(director)
+    def __init__(self, director=None, name=None, buttons=None, background=None, music=None):
+        super().__init__(director, name)
 
         if buttons is not None:
             if type(buttons) is list:
@@ -576,8 +581,8 @@ class MainMenuButton(Button):
 
 
 class GameScene(Scene):
-    def __init__(self, director=None):
-        super().__init__(director)
+    def __init__(self, director=None, name=None):
+        super().__init__(director, name)
 
         self.entities = []
         self.level = []

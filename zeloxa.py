@@ -2,6 +2,8 @@ import pygame
 import gamelib.gamelib as gamelib
 import scenes as zeloxa
 
+pygame.init()
+
 
 def main():
     # Initalise director
@@ -18,13 +20,10 @@ def main():
     director.addScenes(gameScenes)
 
     # Load starting scene
-    director.loadScene(0)
+    director.loadScene('MainMenu')
 
     # Start the main loop
     director.loop()
-
-# Initalise pygames
-pygame.init()
 
 if __name__ == '__main__':
     main()
