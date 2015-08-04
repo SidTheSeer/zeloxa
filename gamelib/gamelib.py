@@ -13,7 +13,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREY = (125, 125, 125)
 
-DEFAULT_FONT = pygame.font.SysFont('Menlo', 40)
+DEFAULT_FONT = pygame.font.SysFont('Menlo', 35)
+NEW_FONT = pygame.font.SysFont('Helvetica', 90)
 
 # /===================================/
 #  Director
@@ -23,11 +24,11 @@ DEFAULT_FONT = pygame.font.SysFont('Menlo', 40)
 class Director():
     def __init__(self, gameName=None):
         # Get screen dimensions
-        self.screenWidth = int(pygame.display.Info().current_w)
-        self.screenHeight = int(pygame.display.Info().current_h)
+        self.screenWidth = 800  # int(pygame.display.Info().current_w)
+        self.screenHeight = 600  # int(pygame.display.Info().current_h)
 
         # Initialise screen surface
-        self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight))  # pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
 
         # Set game name
         pygame.display.set_caption(gameName)
@@ -37,12 +38,14 @@ class Director():
         self.quitFlag = False
         self.clock = pygame.time.Clock()
         self.scenes = {}
+        self.startTime = pygame.time.get_ticks()
 
     def loop(self):
         # Main game loop
         while not self.quitFlag:
             # Get a 'global' delta time variable for scenes to access
             self.deltaTime = self.clock.tick(60) / 1000
+            self.elapsedTime = pygame.time.get_ticks() - self.startTime
 
             # Get all pygame events in current frame
             events = pygame.event.get()
@@ -82,6 +85,9 @@ class Director():
                 self.scenes[str(scene.name)] = scene
 
     def loadScene(self, sceneName):
+        # Fill screen with black to clear all previous outputs
+        self.screen.fill(BLACK)
+
         # Set the active scene for the main game loop
         self.activeScene = self.scenes[sceneName]
 
@@ -533,7 +539,7 @@ class BackgroundImage(Image):
 
 class MainMenuButton(Button):
     def __init__(self, scene, commands, rect, caption):
-        borderConfig = {'normal': {'color': WHITE, 'width': 20}, 'toggle': {'color': BLUE, 'width': 20}, 'highlight': {'color': RED, 'width': 20}}
+        borderConfig = {'normal': {'color': WHITE, 'width': 10}, 'toggle': {'color': BLUE, 'width': 10}, 'highlight': {'color': RED, 'width': 10}}
         super().__init__(rect, caption, DEFAULT_FONT, WHITE, BLACK, borderConfig)
 
         self.scene = scene
@@ -581,10 +587,12 @@ class MainMenuButton(Button):
 
 
 class GameScene(Scene):
-    def __init__(self, director=None, name=None):
+    def __init__(self, director=None, name=None, entitiesList=None):
         super().__init__(director, name)
 
-        self.entities = []
+        if type(entitiesList) is list and entitiesList is not None:
+            self.entities = entitiesList
+
         self.level = []
 
     def onEvent(self, events):
@@ -595,20 +603,48 @@ class GameScene(Scene):
         pass
 
     def onDraw(self, screen):
-        pass
+        for entity in self.entities:
+            entity.draw(screen)
 
     def handleCommand(self, command):
         pass
 
+
 # /===================================/
-#  Basic game scene class
+#  Base game object class
 # /===================================/
 
 
-'''class GameObject:
-    def __init__(self, scene=None, rect=[0, 0, 100, 100]):
+class GameObject:
+    def __init__(self, scene=None, x=0, y=0):
         self.scene = scene
-        self.x = rect[0]
-        self.y = rect[1]
-        self.width = rect[2]
-        self.height = rect[3]'''
+        self.x = x
+        self.y = y
+
+
+# /===================================/
+#  Basic wall class
+# /===================================/
+
+
+class Wall(GameObject):
+    def __init__(self, scene=None, x=0, y=0, width=100, height=100):
+        super().__init__(scene, x, y)
+
+        self.width = width
+        self.height = height
+
+        self.surface = pygame.Surface((self.width, self.height))
+
+        self._rect = self.surface.get_rect()
+
+        self._rect.x = x
+        self._rect.y = y
+
+        self._update()
+
+    def _update(self):
+        self.surface.fill(BLUE)
+
+    def draw(self, screen):
+        screen.blit(self.surface, self._rect)
