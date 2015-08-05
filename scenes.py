@@ -82,10 +82,12 @@ class SplashScreen(gamelib.Scene):
         screen.blit(self.fadeInStuff, self.fadeInStuff.get_rect())
 
 
-class FirstGameScene(gamelib.GameScene):
-    def __init__(self, director=None, name=None, entitiesList=None):
-        entitiesList = [gamelib.Wall(self, 0, 0, 300, 300), gamelib.Wall(self, 300, 300, 100, 100)]
+class FirstGameScene(gamelib.PlatformerScene):
+    def __init__(self, director=None, name=None, background=None, walls=None, player=None):
+        player = gamelib.Player(self, 0, 0, 100, 100, 250)
 
         name = 'FirstScene'
 
-        super().__init__(director, name, entitiesList)
+        walls = [gamelib.Wall(self, 300, 300, 100, 100)]
+
+        super().__init__(director, name, background, walls, player)

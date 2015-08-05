@@ -610,6 +610,74 @@ class GameScene(Scene):
         pass
 
 
+class PlatformerScene(Scene):
+    def __init__(self, director=None, name=None, background=None, walls=None, player=None):
+        super().__init__(director, name)
+
+        if type(background) is BackgroundImage:
+            self.backgroundImage = background
+        else:
+            self.backgroundImage = None
+
+        if type(walls) is list:
+            self.walls = walls
+        else:
+            self.walls = None
+
+        if type(player) is Player:
+            self.player = player
+        else:
+            self.player = None
+
+        self.playerMovement = {'moveUp': 0, 'moveDown': 0, 'moveLeft': 0, 'moveRight': 0}
+
+    def onEvent(self, events):
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                self.playerMovement['moveUp'] = self.player.movementRate if event.key == pygame.K_w else self.playerMovement['moveUp']
+                self.playerMovement['moveDown'] = self.player.movementRate if event.key == pygame.K_s else self.playerMovement['moveDown']
+                self.playerMovement['moveLeft'] = self.player.movementRate if event.key == pygame.K_a else self.playerMovement['moveLeft']
+                self.playerMovement['moveRight'] = self.player.movementRate if event.key == pygame.K_d else self.playerMovement['moveRight']
+
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_w:
+                    self.playerMovement['moveUp'] = 0
+                elif event.key == pygame.K_s:
+                    self.playerMovement['moveDown'] = 0
+                elif event.key == pygame.K_a:
+                    self.playerMovement['moveLeft'] = 0
+                elif event.key == pygame.K_d:
+                    self.playerMovement['moveRight'] = 0
+
+        self.player.deltaX = int((self.playerMovement['moveRight'] - self.playerMovement['moveLeft']) * self.director.deltaTime)
+        self.player.deltaY = int((self.playerMovement['moveDown'] - self.playerMovement['moveUp']) * self.director.deltaTime)
+
+    def onUpdate(self):
+        self.player.handleMovement(self.walls)
+
+        if self.player._rect.right >= 500:
+            diff = self.player._rect.right - 500
+            self.player._rect.right = 500
+            self.shiftWorld(-diff)
+
+        if self.player._rect.left <= 120:
+            diff = 120 - self.player._rect.left
+            self.player._rect.left = 120
+            self.shiftWorld(diff)
+
+    def onDraw(self, screen):
+        screen.fill(BLACK)
+
+        for wall in self.walls:
+            wall.draw(screen)
+
+        self.player.draw(screen)
+
+    def shiftWorld(self, offset):
+        for wall in self.walls:
+            wall._rect.x += offset
+
+
 # /===================================/
 #  Base game object class
 # /===================================/
@@ -644,7 +712,59 @@ class Wall(GameObject):
         self._update()
 
     def _update(self):
+        self.surface.fill(RED)
+
+    def draw(self, screen):
+        screen.blit(self.surface, self._rect)
+
+
+class Player(GameObject):
+    def __init__(self, scene=None, x=0, y=0, width=100, height=100, movementRate=3):
+        super().__init__(scene, x, y)
+
+        self.width = width
+        self.height = height
+
+        self.surface = pygame.Surface((self.width, self.height))
+
+        self._rect = self.surface.get_rect()
+
+        self._rect.x = x
+        self._rect.y = y
+
+        self.movementRate = movementRate
+
+        self.deltaX = 0
+        self.deltaY = 0
+
+        self._update()
+
+    def _update(self):
         self.surface.fill(BLUE)
 
     def draw(self, screen):
         screen.blit(self.surface, self._rect)
+
+    def handleMovement(self, collisionObjects):
+        self.x += self.deltaX
+        self.y += self.deltaY
+
+        self._rect.x += self.deltaX
+
+        for object in collisionObjects:
+            if self._rect.colliderect(object._rect):
+                if self.deltaX > 0:
+                    self._rect.right = object._rect.left
+                else:
+                    self._rect.left = object._rect.right
+
+        self._rect.y += self.deltaY
+
+        for object in collisionObjects:
+            if self._rect.colliderect(object._rect):
+                if self.deltaY > 0:
+                    self._rect.bottom = object._rect.top
+                else:
+                    self._rect.top = object._rect.bottom
+
+        self._rect.clamp_ip(self.scene.director.screen.get_rect())

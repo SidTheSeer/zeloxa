@@ -7,6 +7,8 @@ pygame.init()
 
 # XXX: get debug stuff done
 
+# XXX: level design crap - collison and draw levels, same collision level they collide, render from 0 - *, make some constants i.e BASE, BACKGROUND, ENEMIES, PLAYER
+
 
 def main():
     parser = argparse.ArgumentParser()
