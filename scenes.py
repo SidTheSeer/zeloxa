@@ -3,20 +3,22 @@ import gamelib.gamelib as gamelib
 
 
 class MainMenu(gamelib.MenuScene):
-    def __init__(self, director=None, name=None, buttons=None, background=None, music=None):
-        buttonWidth = 300
-        buttonHeight = 100
+    def __init__(self, director=None):
+        # Get button width and height positions
+        button_width = 300
+        button_height = 100
         w = director.screen.get_rect().width
         h = director.screen.get_rect().height
-        wCenter = int((w - buttonWidth) / 2)
-        hCenter = int((h - buttonHeight) / 2)
+        w_center = int((w - button_width) / 2)
+        h_center = int((h - button_height) / 2)
 
+        # Initialise
         background = gamelib.BackgroundImage((0, 0, w, h), ['assets', 'images', 'test.jpg'], 'cover')
-        playButton = gamelib.MainMenuButton(self, {'click': ['loadScene', 'FirstScene']}, (wCenter, hCenter - 150, 300, 100), 'Play')
-        optionsButton = gamelib.MainMenuButton(self, None, (wCenter, hCenter, 300, 100), 'Options')
-        quitButton = gamelib.MainMenuButton(self, {'click': ['quit']}, (wCenter, hCenter + 150, 300, 100), 'Quit')
+        play_button = gamelib.MainMenuButton(self, {'click': ['load_scene', 'FirstScene']}, (w_center, h_center - 150, 300, 100), 'Play')
+        options_button = gamelib.MainMenuButton(self, None, (w_center, h_center, 300, 100), 'Options')
+        quit_button = gamelib.MainMenuButton(self, {'click': ['quit']}, (w_center, h_center + 150, 300, 100), 'Quit')
 
-        buttons = [playButton, optionsButton, quitButton]
+        buttons = [play_button, options_button, quit_button]
 
         music = None
 
@@ -24,17 +26,12 @@ class MainMenu(gamelib.MenuScene):
 
         super().__init__(director, name, buttons, background, music)
 
-        # self.text = gamelib.Text((820, 450, 500, 100), 'I like POTATO', DEFAULT_FONT, gamelib.BLACK)
-
-    def handleCommand(self, command):
-        pass
-
 
 class MainMenu2(gamelib.MenuScene):
-    def __init__(self, director=None, name=None, buttons=None, background=None, music=None):
+    def __init__(self, director=None):
         background = gamelib.BackgroundImage((0, 0, director.screen.get_rect().width, director.screen.get_rect().height), ['assets', 'images', 'test.jpg'], 'cover')
 
-        buttons = [gamelib.MainMenuButton(self, {'click': ['loadScene', 'MainMenu']}, (0, 0, 500, 100), 'SCENE2'), gamelib.MainMenuButton(self, None, (0, 300, 500, 100), 'DERP')]
+        buttons = [gamelib.MainMenuButton(self, {'click': ['load_scene', 'MainMenu']}, (0, 0, 500, 100), 'SCENE2'), gamelib.MainMenuButton(self, None, (0, 300, 500, 100), 'DERP')]
 
         music = None
 
@@ -42,52 +39,51 @@ class MainMenu2(gamelib.MenuScene):
 
         super().__init__(director, name, buttons, background, music)
 
-        # self.text = gamelib.Text((820, 450, 500, 100), 'I like POTATO', DEFAULT_FONT, gamelib.BLACK)
-
-    def handleCommand(self, command):
-        pass
-
 
 class SplashScreen(gamelib.Scene):
-    def __init__(self, director=None, name=None):
-        textWidth = 500
-        textHeight = 150
+    def __init__(self, director=None):
+        text_width = 500
+        text_height = 150
         w = director.screen.get_rect().width
         h = director.screen.get_rect().height
-        wCenter = int((w - textWidth) / 2)
-        hCenter = int((h - textHeight) / 2)
+        w_center = int((w - text_width) / 2)
+        h_center = int((h - text_height) / 2)
         name = 'Splash'
 
         super().__init__(director, name)
 
-        self.developerName = gamelib.Text((wCenter, hCenter, textWidth, textHeight), 'Zeloxa', gamelib.NEW_FONT, gamelib.WHITE)
+        self.developer_name = gamelib.Text((w_center, h_center, text_width, text_height), 'Zeloxa', gamelib.NEW_FONT, gamelib.WHITE)
 
-        self.fadeInStuff = pygame.Surface((director.screen.get_rect().width, director.screen.get_rect().height))
-        self.fadeInStuff.fill((0, 0, 0))
+        self.fade_in_stuff = pygame.Surface((director.screen.get_rect().width, director.screen.get_rect().height))
+        self.fade_in_stuff.fill(gamelib.BLACK)
         self.alpha = 255
 
-    def onEvent(self, event):
-        pass
+    def on_event(self, events):
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                self.director.handle_command(['load_scene', 'MainMenu'])
 
-    def onUpdate(self):
-        self.alpha -= 50 * self.director.deltaTime
-        self.fadeInStuff.set_alpha(max(self.alpha, 0))
+    def on_update(self):
+        self.alpha -= 50 * self.director.delta_time
+        self.fade_in_stuff.set_alpha(max(self.alpha, 0))
 
-        if self.director.elapsedTime >= 6000:
-            self.director.handleCommand(['loadScene', 'MainMenu'])
+        if self.director.elapsed_time >= 6000:
+            self.director.handle_command(['load_scene', 'MainMenu'])
 
-    def onDraw(self, screen):
+    def on_draw(self, screen):
         screen.fill(gamelib.BLACK)
-        self.developerName.draw(screen)
-        screen.blit(self.fadeInStuff, self.fadeInStuff.get_rect())
+        self.developer_name.draw(screen)
+        screen.blit(self.fade_in_stuff, self.fade_in_stuff.get_rect())
 
 
-class FirstGameScene(gamelib.PlatformerScene):
-    def __init__(self, director=None, name=None, background=None, walls=None, player=None):
+class FirstGameScene(gamelib.PlatformScene):
+    def __init__(self, director=None):
         player = gamelib.Player(self, 0, 0, 100, 100, 250)
 
         name = 'FirstScene'
 
         walls = [gamelib.Wall(self, 300, 300, 100, 100)]
+
+        background = None
 
         super().__init__(director, name, background, walls, player)

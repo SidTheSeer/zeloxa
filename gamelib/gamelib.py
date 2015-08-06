@@ -22,30 +22,32 @@ NEW_FONT = pygame.font.SysFont('Helvetica', 90)
 
 
 class Director():
-    def __init__(self, gameName=None):
+    def __init__(self, game_name=None):
         # Get screen dimensions
-        self.screenWidth = 800  # int(pygame.display.Info().current_w)
-        self.screenHeight = 600  # int(pygame.display.Info().current_h)
+        self.screen_width = 800  # int(pygame.display.Info().current_w)
+        self.screen_height = 600  # int(pygame.display.Info().current_h)
 
         # Initialise screen surface
-        self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight))  # pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))  # pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
 
         # Set game name
-        pygame.display.set_caption(gameName)
+        pygame.display.set_caption(game_name)
 
         # Initialise director variables
         self.scene = None
-        self.quitFlag = False
+        self.quit_flag = False
         self.clock = pygame.time.Clock()
         self.scenes = {}
-        self.startTime = pygame.time.get_ticks()
+        self.start_time = pygame.time.get_ticks()
+
+        self.active_scene = None
 
     def loop(self):
         # Main game loop
-        while not self.quitFlag:
+        while not self.quit_flag:
             # Get a 'global' delta time variable for scenes to access
-            self.deltaTime = self.clock.tick(60) / 1000
-            self.elapsedTime = pygame.time.get_ticks() - self.startTime
+            self.delta_time = self.clock.tick(60) / 1000
+            self.elapsed_time = pygame.time.get_ticks() - self.start_time
 
             # Get all pygame events in current frame
             events = pygame.event.get()
@@ -59,13 +61,13 @@ class Director():
                         self.quit()
 
             # Detect events
-            self.activeScene.onEvent(events)
+            self.active_scene.on_event(events)
 
             # Update scene
-            self.activeScene.onUpdate()
+            self.active_scene.on_update()
 
             # Draw the screen
-            self.activeScene.onDraw(self.screen)
+            self.active_scene.on_draw(self.screen)
 
             # Redraw display
             pygame.display.flip()
@@ -74,7 +76,7 @@ class Director():
         pygame.quit()
         sys.exit()
 
-    def addScenes(self, scenes):
+    def add_scenes(self, scenes):
         # If scenes is a list
         if type(scenes) is list:
             for scene in scenes:
@@ -84,25 +86,25 @@ class Director():
                 # Make scenes accessible by name
                 self.scenes[str(scene.name)] = scene
 
-    def loadScene(self, sceneName):
+    def load_scene(self, scene_name):
         # Fill screen with black to clear all previous outputs
         self.screen.fill(BLACK)
 
         # Set the active scene for the main game loop
-        self.activeScene = self.scenes[sceneName]
+        self.active_scene = self.scenes[scene_name]
 
         # Pass a director reference to the scene
-        self.activeScene.director = self
+        self.active_scene.director = self
 
     def quit(self):
         # Break the loop so the game ends
-        self.quitFlag = True
+        self.quit_flag = True
 
-    def handleCommand(self, command):
+    def handle_command(self, command):
         # Command has to be list
         if type(command) is list:
-            if command[0] == 'loadScene':
-                self.loadScene(command[1])
+            if command[0] == 'load_scene':
+                self.load_scene(command[1])
             elif command[0] == 'quit':
                 self.quit()
 
@@ -112,7 +114,7 @@ class Director():
 # /===================================/
 
 
-class Scene():
+class Scene:
     def __init__(self, director=None, name=None):
         # Set director reference
         if director is not None:
@@ -121,17 +123,17 @@ class Scene():
         if name is not None and type(name) is str:
             self.name = name
 
-    def onEvent(self, event):
+    def on_event(self, event):
         # Pass events to scene for processing
-        raise NotImplementedError("onEvent not defined in subclass")
+        raise NotImplementedError("on_event not defined in subclass")
 
-    def onUpdate(self):
+    def on_update(self):
         # Calculate game logic every frame
-        raise NotImplementedError("onUpdate not defined in subclass")
+        raise NotImplementedError("on_update not defined in subclass")
 
-    def onDraw(self, screen):
+    def on_draw(self, screen):
         # Draw surfaces within scene
-        raise NotImplementedError("onDraw not defined in subclass")
+        raise NotImplementedError("on_draw not defined in subclass")
 
 
 # /===================================/
@@ -143,9 +145,9 @@ class GUIElement:
     def __init__(self, rect=None):
         # Default to a 100x100 rect
         if rect is None:
-            self._rect = pygame.rect.Rect(0, 0, 100, 100)
+            self.rect = pygame.rect.Rect(0, 0, 100, 100)
         else:
-            self._rect = pygame.rect.Rect(rect)
+            self.rect = pygame.rect.Rect(rect)
 
     def draw(self, screen):
         raise NotImplementedError('draw not defined in subclass')
@@ -153,8 +155,8 @@ class GUIElement:
     def _update(self):
         raise NotImplementedError('_update not defined in subclass')
 
-    def handleEvent(self, event):
-        raise NotImplementedError('handleEvent not defined in subclass')
+    def handle_event(self, event):
+        raise NotImplementedError('handle_event not defined in subclass')
 
 # /===================================/
 #  General text class
@@ -162,7 +164,7 @@ class GUIElement:
 
 
 class Text(GUIElement):
-    def __init__(self, rect=None, caption=None, font=None, fontColor=WHITE, centered=True):
+    def __init__(self, rect=None, caption=None, font=None, font_color=WHITE, centered=True):
         super().__init__(rect)
 
         if caption is None:
@@ -175,12 +177,12 @@ class Text(GUIElement):
         else:
             self._font = font
 
-        self._fontColor = fontColor
+        self.font_color = font_color
 
         self._visible = True
 
         # Initalise surface
-        self.surface = pygame.Surface(self._rect.size, pygame.SRCALPHA)
+        self.surface = pygame.Surface(self.rect.size, pygame.SRCALPHA)
 
         self._centered = centered
 
@@ -189,26 +191,26 @@ class Text(GUIElement):
 
     def _update(self):
         # Make it easier to code
-        w = self._rect.width
-        h = self._rect.height
+        w = self.rect.width
+        h = self.rect.height
 
         # Render font
-        renderedText = self._font.render(self._caption, True, self._fontColor)
-        captionRect = renderedText.get_rect()
+        rendered_text = self._font.render(self._caption, True, self.font_color)
+        caption_rect = rendered_text.get_rect()
 
         # Center text
         if self._centered:
-            captionRect.center = int(w / 2), int(h / 2)
+            caption_rect.center = int(w / 2), int(h / 2)
 
         # Blit text to surface
-        self.surface.blit(renderedText, captionRect)
+        self.surface.blit(rendered_text, caption_rect)
 
     def draw(self, screen):
         # Blit text to screen
         if self._visible:
-            screen.blit(self.surface, self._rect)
+            screen.blit(self.surface, self.rect)
 
-    def handleEvent(self, event):
+    def handle_event(self, event):
         pass
 
 
@@ -218,7 +220,7 @@ class Text(GUIElement):
 
 
 class Button(GUIElement):
-    def __init__(self, rect=None, caption=None, font=None, fontColor=WHITE, backgroundColor=BLACK, border=None, normal=None, toggle=None, highlight=None):
+    def __init__(self, rect=None, caption=None, font=None, font_color=WHITE, background_color=BLACK, border=None, normal=None, toggle=None, highlight=None):
 
         super().__init__(rect)
 
@@ -240,119 +242,123 @@ class Button(GUIElement):
             self._border = border
 
         # Assign the font color
-        self._fontColor = fontColor
+        self.font_color = font_color
 
         # Assign the background color
-        self._bgcolor = backgroundColor
+        self._bgcolor = background_color
 
         # Default value for button visibility
         self._visible = True
 
         # Default values for hover and toggle
-        self.buttonToggled = False
-        self.mouseOverButton = False
-        self.lastButtonToggled = False
+        self.button_toggled = False
+        self.mouse_over_button = False
+        self.last_button_toggled = False
 
         # Button defaults as normal text button when no custom surfaces are passed
-        self.customSurfaces = False
+        self.custom_surfaces = False
 
         if normal is None:
             # Create blank surfaces for the button
-            self.normalSurface = pygame.Surface(self._rect.size)
-            self.toggleSurface = pygame.Surface(self._rect.size)
-            self.highlightSurface = pygame.Surface(self._rect.size)
+            self.normal_surface = pygame.Surface(self.rect.size)
+            self.toggle_surface = pygame.Surface(self.rect.size)
+            self.highlight_surface = pygame.Surface(self.rect.size)
 
             # Call the initial update to draw the button
             self._update()
         else:
-            self.assignSurfaces(normal, toggle, highlight)
+            self.assign_surfaces(normal, toggle, highlight)
+
+        self.orig_normal_surface = None
+        self.orig_highlight_surface = None
+        self.orig_toggle_surface = None
 
     def draw(self, screen):
         if self._visible:
-            if self.buttonToggled:
-                screen.blit(self.toggleSurface, self._rect)
-            elif self.mouseOverButton:
-                screen.blit(self.highlightSurface, self._rect)
+            if self.button_toggled:
+                screen.blit(self.toggle_surface, self.rect)
+            elif self.mouse_over_button:
+                screen.blit(self.highlight_surface, self.rect)
             else:
-                screen.blit(self.normalSurface, self._rect)
+                screen.blit(self.normal_surface, self.rect)
 
     def _update(self):
 
         # If using custom surfaces
-        if self.customSurfaces:
-            self.normalSurface = pygame.transform.smoothscale(self.origNormalSurface, self._rect.size)
-            self.toggleSurface = pygame.transform.smoothscale(self.origToggleSurface, self._rect.size)
-            self.highlightSurface = pygame.transform.smoothscale(self.origHighlightSurface, self._rect.size)
+        if self.custom_surfaces:
+            self.normal_surface = pygame.transform.smoothscale(self.orig_normal_surface, self.rect.size)
+            self.toggle_surface = pygame.transform.smoothscale(self.orig_toggle_surface, self.rect.size)
+            self.highlight_surface = pygame.transform.smoothscale(self.orig_highlight_surface, self.rect.size)
             return
 
-        w = self._rect.width
-        h = self._rect.height
+        w = self.rect.width
+        h = self.rect.height
 
         # Fill the background color for all states
-        self.normalSurface.fill(self._bgcolor)
-        self.toggleSurface.fill(self._bgcolor)
-        self.highlightSurface.fill(self._bgcolor)
+        self.normal_surface.fill(self._bgcolor)
+        self.toggle_surface.fill(self._bgcolor)
+        self.highlight_surface.fill(self._bgcolor)
 
         # Draw the caption text
-        renderedText = self._font.render(self._caption, True, self._fontColor, self._bgcolor)
-        captionRect = renderedText.get_rect()
-        captionRect.center = int(w / 2), int(h / 2)
-        self.normalSurface.blit(renderedText, captionRect)
-        self.toggleSurface.blit(renderedText, captionRect)
-        self.highlightSurface.blit(renderedText, captionRect)
+        rendered_text = self._font.render(self._caption, True, self.font_color, self._bgcolor)
+        caption_rect = rendered_text.get_rect()
+        caption_rect.center = int(w / 2), int(h / 2)
+        self.normal_surface.blit(rendered_text, caption_rect)
+        self.toggle_surface.blit(rendered_text, caption_rect)
+        self.highlight_surface.blit(rendered_text, caption_rect)
 
         if self._border is not None:
-            pygame.draw.rect(self.normalSurface, self._border['normal']['color'], pygame.Rect((0, 0, w, h)), self._border['normal']['width'])
-            pygame.draw.rect(self.toggleSurface, self._border['toggle']['color'], pygame.Rect((0, 0, w, h)), self._border['toggle']['width'])
-            pygame.draw.rect(self.highlightSurface, self._border['highlight']['color'], pygame.Rect((0, 0, w, h)), self._border['highlight']['width'])
+            pygame.draw.rect(self.normal_surface, self._border['normal']['color'], pygame.Rect((0, 0, w, h)), self._border['normal']['width'])
+            pygame.draw.rect(self.toggle_surface, self._border['toggle']['color'], pygame.Rect((0, 0, w, h)), self._border['toggle']['width'])
+            pygame.draw.rect(self.highlight_surface, self._border['highlight']['color'], pygame.Rect((0, 0, w, h)), self._border['highlight']['width'])
 
-    def handleEvent(self, eventObject):
+    def handle_event(self, event_object):
 
         # If event is not relevant or button not visible
-        if eventObject.type not in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP) or not self._visible:
+        if event_object.type not in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP) or not self._visible:
             return
 
-        hasExited = False
+        has_exited = False
 
         # If mouse not over button previously but over button now
-        if not self.mouseOverButton and self._rect.collidepoint(eventObject.pos):
+        if not self.mouse_over_button and self.rect.collidepoint(event_object.pos):
             # Mouse has entered the button
-            self.mouseOverButton = True
-            self.mouseEnter(eventObject)
+            self.mouse_over_button = True
+            self.mouse_enter(event_object)
         # If mouse over button previously but no over button now
-        elif self.mouseOverButton and not self._rect.collidepoint(eventObject.pos):
-            self.mouseOverButton = False
-            hasExited = True
+        elif self.mouse_over_button and not self.rect.collidepoint(event_object.pos):
+            self.mouse_over_button = False
+            has_exited = True
 
-        if self._rect.collidepoint(eventObject.pos):
-            if eventObject.type == pygame.MOUSEMOTION:
-                self.mouseMove(eventObject)
-            elif eventObject.type == pygame.MOUSEBUTTONDOWN:
-                self.buttonToggled = True
-                self.lastButtonToggled = True
-                self.mouseDown(eventObject)
+        if self.rect.collidepoint(event_object.pos):
+            if event_object.type == pygame.MOUSEMOTION:
+                self.mouse_move(event_object)
+            elif event_object.type == pygame.MOUSEBUTTONDOWN:
+                self.button_toggled = True
+                self.last_button_toggled = True
+                self.mouse_down(event_object)
         else:
-            if eventObject.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN):
-                self.lastButtonToggled = False
+            if event_object.type in (pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN):
+                self.last_button_toggled = False
 
-        doMouseClick = False
-        if eventObject.type == pygame.MOUSEBUTTONUP:
-            if self.lastButtonToggled:
-                doMouseClick = True
-            self.lastButtonToggled = False
+        do_mouse_click = False
+        if event_object.type == pygame.MOUSEBUTTONUP:
+            if self.last_button_toggled:
+                do_mouse_click = True
+            self.last_button_toggled = False
 
-            if self.buttonToggled:
-                self.buttonToggled = False
-                self.mouseUp(eventObject)
+            if self.button_toggled:
+                self.button_toggled = False
+                self.mouse_up(event_object)
 
-            if doMouseClick:
-                self.buttonToggled = False
-                self.mouseClick(eventObject)
+            if do_mouse_click:
+                self.button_toggled = False
+                self.mouse_click(event_object)
 
-        if hasExited:
-            self.mouseExit(eventObject)
+        if has_exited:
+            self.mouse_exit(event_object)
 
-    def assignSurfaces(self, normal, toggle=None, highlight=None):
+    def assign_surfaces(self, normal, toggle=None, highlight=None):
 
         # If toggle or highlight surface or reference not sent
         if toggle is None:
@@ -361,37 +367,37 @@ class Button(GUIElement):
             highlight = normal
 
         if type(normal) == str:
-            self.origNormalSurface = pygame.image.load(normal)
+            self.orig_normal_surface = pygame.image.load(normal)
         if type(toggle) == str:
-            self.origToggleSurface = pygame.image.load(toggle)
+            self.orig_toggle_surface = pygame.image.load(toggle)
         if type(highlight) == str:
-            self.origHighlightSurface = pygame.image.load(highlight)
+            self.orig_highlight_surface = pygame.image.load(highlight)
 
         if normal.get_size() != toggle.get_size() != highlight.get_size():
             raise Exception('Surfaces not same size!')
 
-        self.normalSurface = self.origNormalSurface
-        self.toggleSurface = self.origToggleSurface
-        self.highlightSurface = self.origHighlightSurface
-        self.customSurfaces = True
+        self.normal_surface = self.orig_normal_surface
+        self.toggle_surface = self.orig_toggle_surface
+        self.highlight_surface = self.orig_highlight_surface
+        self.custom_surfaces = True
 
-    def mouseClick(self, event):
-        raise NotImplementedError("mouseClick not defined in subclass")
+    def mouse_click(self, event):
+        raise NotImplementedError("mouse_click not defined in subclass")
 
-    def mouseEnter(self, event):
-        raise NotImplementedError("mouseEnter not defined in subclass")
+    def mouse_enter(self, event):
+        raise NotImplementedError("mouse_enter not defined in subclass")
 
-    def mouseExit(self, event):
-        raise NotImplementedError("mouseExit not defined in subclass")
+    def mouse_exit(self, event):
+        raise NotImplementedError("mouse_exit not defined in subclass")
 
-    def mouseMove(self, event):
-        raise NotImplementedError("mouseMove not defined in subclass")
+    def mouse_move(self, event):
+        raise NotImplementedError("mouse_move not defined in subclass")
 
-    def mouseDown(self, event):
-        raise NotImplementedError("mouseDown not defined in subclass")
+    def mouse_down(self, event):
+        raise NotImplementedError("mouse_down not defined in subclass")
 
-    def mouseUp(self, event):
-        raise NotImplementedError("mouseUp not defined in subclass")
+    def mouse_up(self, event):
+        raise NotImplementedError("mouse_up not defined in subclass")
 
 
 # /===================================/
@@ -406,18 +412,18 @@ class Image(GUIElement):
         if image is None:
             image = pygame.Surface((100, 100))
         else:
-            self._sourceImage = pygame.image.load(os.path.join(*image)).convert()
+            self._source_image = pygame.image.load(os.path.join(*image)).convert()
 
-        self.surface = pygame.Surface(self._rect.size)
+        self.surface = pygame.Surface(self.rect.size)
         self._update()
 
     def draw(self, screen):
-        screen.blit(self.surface, self._rect, (0, 0, self._rect.width, self._rect.height))
+        screen.blit(self.surface, self.rect, (0, 0, self.rect.width, self.rect.height))
 
     def _update(self):
         pass
 
-    def handleEvent(self):
+    def handle_event(self):
         pass
 
 
@@ -458,18 +464,18 @@ class MenuScene(Scene):
         if music is not None:
             self.music.play()
 
-    def onUpdate(self):
+    def on_update(self):
         pass
 
-    def onEvent(self, events):
+    def on_event(self, events):
         for event in events:
             # If event is mouse related
             if event.type in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONDOWN):
                 # Send the mouse event to every button
                 for button in self.buttons:
-                    button.handleEvent(event)
+                    button.handle_event(event)
 
-    def onDraw(self, screen):
+    def on_draw(self, screen):
         # Draw the background first
         self.background.draw(screen)
 
@@ -477,7 +483,7 @@ class MenuScene(Scene):
         for button in self.buttons:
             button.draw(screen)
 
-    def handleCommand(self):
+    def handle_command(self):
         pass
 
 
@@ -487,49 +493,52 @@ class MenuScene(Scene):
 
 
 class BackgroundImage(Image):
-    def __init__(self, rect=None, image=None, imageType=None):
-        if imageType is None:
-            self._imageType = 'static'
-        elif type(imageType) is str:
-            self._imageType = imageType
+    def __init__(self, rect=None, image=None, image_type=None):
+        if image_type is None:
+            self._image_type = 'static'
+        elif type(image_type) is str:
+            self._image_type = image_type
         else:
-            self._imageType = 'static'
+            self._image_type = 'static'
 
         super().__init__(rect, image)
 
     def _update(self):
-        destWidth = self._rect.width
-        destHeight = self._rect.height
-        sourceWidth = self._sourceImage.get_rect().width
-        sourceHeight = self._sourceImage.get_rect().height
+        dest_width = self.rect.width
+        dest_height = self.rect.height
+        source_width = self._source_image.get_rect().width
+        source_height = self._source_image.get_rect().height
 
-        imageRatio = sourceWidth / sourceHeight
-        destRatio = destWidth / destHeight
+        image_ratio = source_width / source_height
+        dest_ratio = dest_width / dest_height
 
-        if self._imageType == 'contain':
-            if imageRatio <= destRatio:
-                newWidth = destHeight * imageRatio
-                newHeight = destHeight
-            elif imageRatio >= destRatio:
-                newWidth = destWidth
-                newHeight = destWidth / imageRatio
-        elif self._imageType == 'cover':
-            if imageRatio <= destRatio:
-                newWidth = destWidth
-                newHeight = destWidth / imageRatio
-            elif imageRatio >= destRatio:
-                newWidth = destHeight * imageRatio
-                newHeight = destHeight
-        elif self._imageType == 'static' or self._imageType is None:
-            newWidth = destWidth
-            newHeight = destHeight
+        new_width = 0
+        new_height = 0
 
-        scaledImage = pygame.transform.smoothscale(self._sourceImage, (int(newWidth), int(newHeight)))
+        if self._image_type == 'contain':
+            if image_ratio <= dest_ratio:
+                new_width = dest_height * image_ratio
+                new_height = dest_height
+            elif image_ratio >= dest_ratio:
+                new_width = dest_width
+                new_height = dest_width / image_ratio
+        elif self._image_type == 'cover':
+            if image_ratio <= dest_ratio:
+                new_width = dest_width
+                new_height = dest_width / image_ratio
+            elif image_ratio >= dest_ratio:
+                new_width = dest_height * image_ratio
+                new_height = dest_height
+        elif self._image_type == 'static' or self._image_type is None:
+            new_width = dest_width
+            new_height = dest_height
 
-        scaledRect = scaledImage.get_rect()
-        scaledRect.center = int(self._rect.width / 2), int(self._rect.height / 2)
+        scaled_image = pygame.transform.smoothscale(self._source_image, (int(new_width), int(new_height)))
 
-        self.surface.blit(scaledImage, scaledRect)
+        scaled_rect = scaled_image.get_rect()
+        scaled_rect.center = int(self.rect.width / 2), int(self.rect.height / 2)
+
+        self.surface.blit(scaled_image, scaled_rect)
 
 
 # /===================================/
@@ -539,45 +548,45 @@ class BackgroundImage(Image):
 
 class MainMenuButton(Button):
     def __init__(self, scene, commands, rect, caption):
-        borderConfig = {'normal': {'color': WHITE, 'width': 10}, 'toggle': {'color': BLUE, 'width': 10}, 'highlight': {'color': RED, 'width': 10}}
-        super().__init__(rect, caption, DEFAULT_FONT, WHITE, BLACK, borderConfig)
+        border_config = {'normal': {'color': WHITE, 'width': 10}, 'toggle': {'color': BLUE, 'width': 10}, 'highlight': {'color': RED, 'width': 10}}
+        super().__init__(rect, caption, DEFAULT_FONT, WHITE, BLACK, border_config)
 
         self.scene = scene
 
         if type(commands) is dict:
-            self.clickCommand = commands['click'] if 'click' in commands else None
-            self.enterCommand = commands['enter'] if 'enter' in commands else None
-            self.exitCommand = commands['exit'] if 'exit' in commands else None
-            self.moveCommand = commands['move'] if 'move' in commands else None
-            self.downCommand = commands['down'] if 'down' in commands else None
-            self.upCommand = commands['up'] if 'up' in commands else None
+            self.click_command = commands['click'] if 'click' in commands else None
+            self.enter_command = commands['enter'] if 'enter' in commands else None
+            self.exit_command = commands['exit'] if 'exit' in commands else None
+            self.move_command = commands['move'] if 'move' in commands else None
+            self.down_command = commands['down'] if 'down' in commands else None
+            self.up_command = commands['up'] if 'up' in commands else None
         else:
-            self.clickCommand = None
-            self.enterCommand = None
-            self.exitCommand = None
-            self.moveCommand = None
-            self.downCommand = None
-            self.upCommand = None
+            self.click_command = None
+            self.enter_command = None
+            self.exit_command = None
+            self.move_command = None
+            self.down_command = None
+            self.up_command = None
 
-    def mouseClick(self, event):
-        if self.clickCommand is not None:
-            self.scene.director.handleCommand(self.clickCommand)
+    def mouse_click(self, event):
+        if self.click_command is not None:
+            self.scene.director.handle_command(self.click_command)
 
-    def mouseEnter(self, event):
+    def mouse_enter(self, event):
         # pygame.mouse.set_cursor(*cursors.hover)
         pass
 
-    def mouseExit(self, event):
+    def mouse_exit(self, event):
         # pygame.mouse.set_cursor(*cursors.normal)
         pass
 
-    def mouseMove(self, event):
+    def mouse_move(self, event):
         pass
 
-    def mouseDown(self, event):
+    def mouse_down(self, event):
         pass
 
-    def mouseUp(self, event):
+    def mouse_up(self, event):
         pass
 
 
@@ -587,85 +596,74 @@ class MainMenuButton(Button):
 
 
 class GameScene(Scene):
-    def __init__(self, director=None, name=None, entitiesList=None):
+    def __init__(self, director=None, name=None, entities_list=None):
         super().__init__(director, name)
 
-        if type(entitiesList) is list and entitiesList is not None:
-            self.entities = entitiesList
+        if type(entities_list) is list and entities_list is not None:
+            self.entities = entities_list
 
         self.level = []
 
-    def onEvent(self, events):
+    def on_event(self, events):
         for event in events:
             pass
 
-    def onUpdate(self):
+    def on_update(self):
         pass
 
-    def onDraw(self, screen):
+    def on_draw(self, screen):
         for entity in self.entities:
             entity.draw(screen)
 
-    def handleCommand(self, command):
+    def handle_command(self, command):
         pass
 
 
-class PlatformerScene(Scene):
+class PlatformScene(Scene):
     def __init__(self, director=None, name=None, background=None, walls=None, player=None):
         super().__init__(director, name)
 
-        if type(background) is BackgroundImage:
-            self.backgroundImage = background
-        else:
-            self.backgroundImage = None
+        self.background = background
+        self.walls = walls
+        self.player = player
 
-        if type(walls) is list:
-            self.walls = walls
-        else:
-            self.walls = None
+        self.player_movement = {'moveUp': 0, 'moveDown': 0, 'moveLeft': 0, 'moveRight': 0}
 
-        if type(player) is Player:
-            self.player = player
-        else:
-            self.player = None
-
-        self.playerMovement = {'moveUp': 0, 'moveDown': 0, 'moveLeft': 0, 'moveRight': 0}
-
-    def onEvent(self, events):
+    def on_event(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
-                self.playerMovement['moveUp'] = self.player.movementRate if event.key == pygame.K_w else self.playerMovement['moveUp']
-                self.playerMovement['moveDown'] = self.player.movementRate if event.key == pygame.K_s else self.playerMovement['moveDown']
-                self.playerMovement['moveLeft'] = self.player.movementRate if event.key == pygame.K_a else self.playerMovement['moveLeft']
-                self.playerMovement['moveRight'] = self.player.movementRate if event.key == pygame.K_d else self.playerMovement['moveRight']
+                self.player_movement['moveUp'] = self.player.movement_rate if event.key == pygame.K_w else self.player_movement['moveUp']
+                self.player_movement['moveDown'] = self.player.movement_rate if event.key == pygame.K_s else self.player_movement['moveDown']
+                self.player_movement['moveLeft'] = self.player.movement_rate if event.key == pygame.K_a else self.player_movement['moveLeft']
+                self.player_movement['moveRight'] = self.player.movement_rate if event.key == pygame.K_d else self.player_movement['moveRight']
 
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_w:
-                    self.playerMovement['moveUp'] = 0
+                    self.player_movement['moveUp'] = 0
                 elif event.key == pygame.K_s:
-                    self.playerMovement['moveDown'] = 0
+                    self.player_movement['moveDown'] = 0
                 elif event.key == pygame.K_a:
-                    self.playerMovement['moveLeft'] = 0
+                    self.player_movement['moveLeft'] = 0
                 elif event.key == pygame.K_d:
-                    self.playerMovement['moveRight'] = 0
+                    self.player_movement['moveRight'] = 0
 
-        self.player.deltaX = int((self.playerMovement['moveRight'] - self.playerMovement['moveLeft']) * self.director.deltaTime)
-        self.player.deltaY = int((self.playerMovement['moveDown'] - self.playerMovement['moveUp']) * self.director.deltaTime)
+        self.player.delta_x = int((self.player_movement['moveRight'] - self.player_movement['moveLeft']) * self.director.delta_time)
+        self.player.delta_y = int((self.player_movement['moveDown'] - self.player_movement['moveUp']) * self.director.delta_time)
 
-    def onUpdate(self):
-        self.player.handleMovement(self.walls)
+    def on_update(self):
+        self.player.handle_movement(self.walls)
 
-        if self.player._rect.right >= 500:
-            diff = self.player._rect.right - 500
-            self.player._rect.right = 500
-            self.shiftWorld(-diff)
+        if self.player.rect.right >= 500:
+            diff = self.player.rect.right - 500
+            self.player.rect.right = 500
+            self.shift_world(-diff)
 
-        if self.player._rect.left <= 120:
-            diff = 120 - self.player._rect.left
-            self.player._rect.left = 120
-            self.shiftWorld(diff)
+        if self.player.rect.left <= 120:
+            diff = 120 - self.player.rect.left
+            self.player.rect.left = 120
+            self.shift_world(diff)
 
-    def onDraw(self, screen):
+    def on_draw(self, screen):
         screen.fill(BLACK)
 
         for wall in self.walls:
@@ -673,9 +671,9 @@ class PlatformerScene(Scene):
 
         self.player.draw(screen)
 
-    def shiftWorld(self, offset):
+    def shift_world(self, offset):
         for wall in self.walls:
-            wall._rect.x += offset
+            wall.rect.x += offset
 
 
 # /===================================/
@@ -704,10 +702,10 @@ class Wall(GameObject):
 
         self.surface = pygame.Surface((self.width, self.height))
 
-        self._rect = self.surface.get_rect()
+        self.rect = self.surface.get_rect()
 
-        self._rect.x = x
-        self._rect.y = y
+        self.rect.x = x
+        self.rect.y = y
 
         self._update()
 
@@ -715,11 +713,11 @@ class Wall(GameObject):
         self.surface.fill(RED)
 
     def draw(self, screen):
-        screen.blit(self.surface, self._rect)
+        screen.blit(self.surface, self.rect)
 
 
 class Player(GameObject):
-    def __init__(self, scene=None, x=0, y=0, width=100, height=100, movementRate=3):
+    def __init__(self, scene=None, x=0, y=0, width=100, height=100, movement_rate=3):
         super().__init__(scene, x, y)
 
         self.width = width
@@ -727,15 +725,15 @@ class Player(GameObject):
 
         self.surface = pygame.Surface((self.width, self.height))
 
-        self._rect = self.surface.get_rect()
+        self.rect = self.surface.get_rect()
 
-        self._rect.x = x
-        self._rect.y = y
+        self.rect.x = x
+        self.rect.y = y
 
-        self.movementRate = movementRate
+        self.movement_rate = movement_rate
 
-        self.deltaX = 0
-        self.deltaY = 0
+        self.delta_x = 0
+        self.delta_y = 0
 
         self._update()
 
@@ -743,28 +741,28 @@ class Player(GameObject):
         self.surface.fill(BLUE)
 
     def draw(self, screen):
-        screen.blit(self.surface, self._rect)
+        screen.blit(self.surface, self.rect)
 
-    def handleMovement(self, collisionObjects):
-        self.x += self.deltaX
-        self.y += self.deltaY
+    def handle_movement(self, collision_objects):
+        self.x += self.delta_x
+        self.y += self.delta_y
 
-        self._rect.x += self.deltaX
+        self.rect.x += self.delta_x
 
-        for object in collisionObjects:
-            if self._rect.colliderect(object._rect):
-                if self.deltaX > 0:
-                    self._rect.right = object._rect.left
+        for thing in collision_objects:
+            if self.rect.colliderect(thing.rect):
+                if self.delta_x > 0:
+                    self.rect.right = thing.rect.left
                 else:
-                    self._rect.left = object._rect.right
+                    self.rect.left = thing.rect.right
 
-        self._rect.y += self.deltaY
+        self.rect.y += self.delta_y
 
-        for object in collisionObjects:
-            if self._rect.colliderect(object._rect):
-                if self.deltaY > 0:
-                    self._rect.bottom = object._rect.top
+        for thing in collision_objects:
+            if self.rect.colliderect(thing.rect):
+                if self.delta_y > 0:
+                    self.rect.bottom = thing.rect.top
                 else:
-                    self._rect.top = object._rect.bottom
+                    self.rect.top = thing.rect.bottom
 
-        self._rect.clamp_ip(self.scene.director.screen.get_rect())
+        self.rect.clamp_ip(self.scene.director.screen.get_rect())

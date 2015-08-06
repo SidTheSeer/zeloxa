@@ -15,20 +15,19 @@ def main():
     parser.add_argument("-d", "--debug", help="turn on debugging", action="store_true")
     args = parser.parse_args()
 
-    # Initalise director
+    # Initialise director
     director = gamelib.Director('Zeloxa')
 
-    # Initalise scenes
-    splashScreen = zeloxa.SplashScreen(director)
-    mainMenu1 = zeloxa.MainMenu(director)
-    mainMenu2 = zeloxa.MainMenu2(director)
-    firstGameScene = zeloxa.FirstGameScene(director)
+    # Initialise scenes
+    splash_screen = zeloxa.SplashScreen(director)
+    main_menu = zeloxa.MainMenu(director)
+    level_1 = zeloxa.FirstGameScene(director)
 
     # Collect into list
-    gameScenes = [mainMenu1, mainMenu2, splashScreen, firstGameScene]
+    game_scenes = [splash_screen, main_menu, level_1]
 
     # Add levels to director
-    director.addScenes(gameScenes)
+    director.add_scenes(game_scenes)
 
     if args.debug:
         print('yay')
@@ -36,7 +35,7 @@ def main():
         print('Nay!')
 
     # Load starting scene
-    director.loadScene('MainMenu')
+    director.load_scene('Splash')
 
     # Start the main loop
     director.loop()
