@@ -21,14 +21,14 @@ NEW_FONT = pygame.font.SysFont('Helvetica', 90)
 # /===================================/
 
 
-class Director():
+class Director:
     def __init__(self, game_name=None):
         # Get screen dimensions
-        self.screen_width = 800  # int(pygame.display.Info().current_w)
-        self.screen_height = 600  # int(pygame.display.Info().current_h)
+        self.screen_width = 800
+        self.screen_height = 600
 
         # Initialise screen surface
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))  # pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
 
         # Set game name
         pygame.display.set_caption(game_name)
@@ -41,6 +41,9 @@ class Director():
         self.start_time = pygame.time.get_ticks()
 
         self.active_scene = None
+
+        self.delta_time = 0
+        self.elapsed_time = 0
 
     def loop(self):
         # Main game loop
@@ -410,7 +413,7 @@ class Image(GUIElement):
         super().__init__(rect)
 
         if image is None:
-            image = pygame.Surface((100, 100))
+            self._source_image = pygame.Surface((100, 100))
         else:
             self._source_image = pygame.image.load(os.path.join(*image)).convert()
 
@@ -423,7 +426,7 @@ class Image(GUIElement):
     def _update(self):
         pass
 
-    def handle_event(self):
+    def handle_event(self, event):
         pass
 
 
