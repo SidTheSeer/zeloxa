@@ -1,8 +1,8 @@
 import pygame
-import gamelib.gamelib as gamelib
+from gamelib import *
 
 
-class MainMenu(gamelib.MenuScene):
+class MainMenu(extended.MenuScene):
     def __init__(self, director=None):
         # Get button width and height positions
         button_width = 300
@@ -13,10 +13,10 @@ class MainMenu(gamelib.MenuScene):
         h_center = int((h - button_height) / 2)
 
         # Initialise
-        background = gamelib.BackgroundImage((0, 0, w, h), ['assets', 'images', 'test.jpg'], 'cover')
-        play_button = gamelib.MainMenuButton(self, {'click': ['load_scene', 'FirstScene']}, (w_center, h_center - 150, 300, 100), 'Play')
-        options_button = gamelib.MainMenuButton(self, None, (w_center, h_center, 300, 100), 'Options')
-        quit_button = gamelib.MainMenuButton(self, {'click': ['quit']}, (w_center, h_center + 150, 300, 100), 'Quit')
+        background = extended.BackgroundImage((0, 0, w, h), ['assets', 'images', 'test.jpg'], 'cover')
+        play_button = extended.MainMenuButton(self, {'click': ['load_scene', 'FirstScene']}, (w_center, h_center - 150, 300, 100), 'Play')
+        options_button = extended.MainMenuButton(self, None, (w_center, h_center, 300, 100), 'Options')
+        quit_button = extended.MainMenuButton(self, {'click': ['quit']}, (w_center, h_center + 150, 300, 100), 'Quit')
 
         buttons = [play_button, options_button, quit_button]
 
@@ -27,11 +27,11 @@ class MainMenu(gamelib.MenuScene):
         super().__init__(director, name, buttons, background, music)
 
 
-class MainMenu2(gamelib.MenuScene):
+class MainMenu2(extended.MenuScene):
     def __init__(self, director=None):
-        background = gamelib.BackgroundImage((0, 0, director.screen.get_rect().width, director.screen.get_rect().height), ['assets', 'images', 'test.jpg'], 'cover')
+        background = extended.BackgroundImage((0, 0, director.screen.get_rect().width, director.screen.get_rect().height), ['assets', 'images', 'test.jpg'], 'cover')
 
-        buttons = [gamelib.MainMenuButton(self, {'click': ['load_scene', 'MainMenu']}, (0, 0, 500, 100), 'SCENE2'), gamelib.MainMenuButton(self, None, (0, 300, 500, 100), 'DERP')]
+        buttons = [extended.MainMenuButton(self, {'click': ['load_scene', 'MainMenu']}, (0, 0, 500, 100), 'SCENE2'), extended.MainMenuButton(self, None, (0, 300, 500, 100), 'DERP')]
 
         music = None
 
@@ -40,7 +40,7 @@ class MainMenu2(gamelib.MenuScene):
         super().__init__(director, name, buttons, background, music)
 
 
-class SplashScreen(gamelib.Scene):
+class SplashScreen(base.Scene):
     def __init__(self, director=None):
         text_width = 500
         text_height = 150
@@ -52,10 +52,10 @@ class SplashScreen(gamelib.Scene):
 
         super().__init__(director, name)
 
-        self.developer_name = gamelib.Text((w_center, h_center, text_width, text_height), 'Zeloxa', gamelib.NEW_FONT, gamelib.WHITE)
+        self.developer_name = base.Text((w_center, h_center, text_width, text_height), 'Zeloxa', base.NEW_FONT, base.Colors.WHITE)
 
         self.fade_in_stuff = pygame.Surface((director.screen.get_rect().width, director.screen.get_rect().height))
-        self.fade_in_stuff.fill(gamelib.BLACK)
+        self.fade_in_stuff.fill(base.Colors.BLACK)
         self.alpha = 255
 
     def on_event(self, events):
@@ -71,19 +71,45 @@ class SplashScreen(gamelib.Scene):
             self.director.handle_command(['load_scene', 'MainMenu'])
 
     def on_draw(self, screen):
-        screen.fill(gamelib.BLACK)
+        screen.fill(base.Colors.BLACK)
         self.developer_name.draw(screen)
         screen.blit(self.fade_in_stuff, self.fade_in_stuff.get_rect())
 
 
-class FirstGameScene(gamelib.PlatformScene):
+class FirstGameScene(extended.PlatformScene):
     def __init__(self, director=None):
-        player = gamelib.Player(self, 0, 0, 100, 100, 250)
+        player = extended.Player(self, 200, 200, 32, 32, 250)
 
         name = 'FirstScene'
 
-        walls = [gamelib.Wall(self, 300, 300, 100, 100)]
-
         background = None
+
+        walls = [
+            "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP",
+            "P                                          P",
+            "P                                          P",
+            "P                                          P",
+            "P                    PPPPPPPPPPPPPPP       P",
+            "P                                          P",
+            "P                                          P",
+            "P                                          P",
+            "P    PPPPPPPP                              P",
+            "P                                          P",
+            "P                          PPPPPPP         P",
+            "P                 PPPPPP                   P",
+            "P                                          P",
+            "P         PPPPPPP                          P",
+            "P                                          P",
+            "P                     PPPPPP               P",
+            "P                                          P",
+            "P   PPPPPPPPPPP                            P",
+            "P                                          P",
+            "P                 PPPPPPPPPPP              P",
+            "P                                          P",
+            "P                                          P",
+            "P                                          P",
+            "P                                          P",
+            "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP",
+        ]
 
         super().__init__(director, name, background, walls, player)

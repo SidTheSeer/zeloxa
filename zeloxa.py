@@ -1,5 +1,5 @@
 import pygame
-import gamelib.gamelib as gamelib
+import gamelib as gamelib
 import scenes as zeloxa
 import argparse
 
@@ -7,7 +7,7 @@ pygame.init()
 
 # XXX: get debug stuff done
 
-# XXX: level design crap - collison and draw levels, same collision level they collide, render from 0 - *, make some constants i.e BASE, BACKGROUND, ENEMIES, PLAYER
+# XXX: level design crap - collision and draw levels, same collision level they collide, render from 0 - *, make some constants i.e BASE, BACKGROUND, ENEMIES, PLAYER
 
 
 def main():
@@ -16,7 +16,7 @@ def main():
     args = parser.parse_args()
 
     # Initialise director
-    director = gamelib.Director('Zeloxa')
+    director = gamelib.base.Director('Zeloxa')
 
     # Initialise scenes
     splash_screen = zeloxa.SplashScreen(director)
@@ -30,9 +30,10 @@ def main():
     director.add_scenes(game_scenes)
 
     if args.debug:
-        print('yay')
+        # Implement debug stuff at some point
+        pass
     else:
-        print('Nay!')
+        pass
 
     # Load starting scene
     director.load_scene('Splash')
