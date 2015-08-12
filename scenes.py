@@ -78,7 +78,7 @@ class SplashScreen(base.Scene):
 
 class FirstGameScene(extended.PlatformScene):
     def __init__(self, director=None):
-        player = extended.Player(self, 200, 200, 32, 32, 250)
+        player = extended.Player(self, 200, 200, 32, 32, 500)
 
         name = 'FirstScene'
 
