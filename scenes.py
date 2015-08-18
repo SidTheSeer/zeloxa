@@ -1,5 +1,6 @@
 import pygame
-from gamelib import *
+from gamelib import base
+from gamelib import extended
 
 
 class MainMenu(extended.MenuScene):
@@ -78,36 +79,30 @@ class SplashScreen(base.Scene):
 
 class FirstGameScene(extended.PlatformScene):
     def __init__(self, director=None):
-        player = extended.Player(self, 200, 200, 32, 32, 500)
+        player = extended.Player(self, 500, 0, 32, 32, 500)
 
         name = 'FirstScene'
 
         background = None
 
         walls = [
-            "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP",
             "P                                          P",
             "P                                          P",
             "P                                          P",
-            "P                    PPPPPPPPPPPPPPP       P",
             "P                                          P",
             "P                                          P",
             "P                                          P",
-            "P    PPPPPPPP                              P",
-            "P                                          P",
-            "P                          PPPPPPP         P",
-            "P                 PPPPPP                   P",
-            "P                                          P",
-            "P         PPPPPPP                          P",
-            "P                                          P",
-            "P                     PPPPPP               P",
-            "P                                          P",
-            "P   PPPPPPPPPPP                            P",
-            "P                                          P",
-            "P                 PPPPPPPPPPP              P",
             "P                                          P",
             "P                                          P",
             "P                                          P",
+            "P                                          P",
+            "P                                          P",
+            "P                                          P",
+            "P                                          P",
+            "P                                          P",
+            "P       PPPPPPPPPPP                        P",
+            "P                                          P",
+            "P     PPPPPPPPPPPP                         P",
             "P                                          P",
             "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP",
         ]

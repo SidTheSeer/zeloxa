@@ -10,7 +10,8 @@ from setuptools import setup
 APP = ['zeloxa.py']
 DATA_FILES = [
 	('', ['assets']),
-	('', ['zeloxa.icns'])
+	('', ['zeloxa.icns']),
+	('', ['gamelib'])
 
 ]
 OPTIONS = {

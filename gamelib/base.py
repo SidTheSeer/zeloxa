@@ -29,6 +29,8 @@ class Director:
         self.screen_width = 800
         self.screen_height = 600
 
+        icon = pygame.image.load('zeloxa.icns')
+        pygame.display.set_icon(icon)
         # Initialise screen surface
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
 
@@ -228,7 +230,7 @@ class Text(GUIElement):
 
 
 class Button(GUIElement):
-    def __init__(self, rect=None, caption=None, font=None, font_color=Colors.WHITE, background_color=Colors.BLACK, border=None, normal=None, toggle=None, highlight=None):
+    def __init__(self, rect=None, caption=None, font=None, font_color=Colors.WHITE, background_color=Colors.BLACK, border=None):
 
         super().__init__(rect)
 
@@ -263,23 +265,13 @@ class Button(GUIElement):
         self.mouse_over_button = False
         self.last_button_toggled = False
 
-        # Button defaults as normal text button when no custom surfaces are passed
-        self.custom_surfaces = False
+        # Create blank surfaces for the button
+        self.normal_surface = pygame.Surface(self.rect.size)
+        self.toggle_surface = pygame.Surface(self.rect.size)
+        self.highlight_surface = pygame.Surface(self.rect.size)
 
-        if normal is None:
-            # Create blank surfaces for the button
-            self.normal_surface = pygame.Surface(self.rect.size)
-            self.toggle_surface = pygame.Surface(self.rect.size)
-            self.highlight_surface = pygame.Surface(self.rect.size)
-
-            # Call the initial update to draw the button
-            self._update()
-        else:
-            self.assign_surfaces(normal, toggle, highlight)
-
-        self.orig_normal_surface = None
-        self.orig_highlight_surface = None
-        self.orig_toggle_surface = None
+        # Call the initial update to draw the button
+        self._update()
 
     def draw(self, screen):
         if self._visible:
@@ -291,14 +283,6 @@ class Button(GUIElement):
                 screen.blit(self.normal_surface, self.rect)
 
     def _update(self):
-
-        # If using custom surfaces
-        if self.custom_surfaces:
-            self.normal_surface = pygame.transform.smoothscale(self.orig_normal_surface, self.rect.size)
-            self.toggle_surface = pygame.transform.smoothscale(self.orig_toggle_surface, self.rect.size)
-            self.highlight_surface = pygame.transform.smoothscale(self.orig_highlight_surface, self.rect.size)
-            return
-
         w = self.rect.width
         h = self.rect.height
 
@@ -365,26 +349,6 @@ class Button(GUIElement):
 
         if has_exited:
             self.mouse_exit(event_object)
-
-    def assign_surfaces(self, normal, toggle=None, highlight=None):
-
-        # If toggle or highlight surface or reference not sent
-        if toggle is None:
-            toggle = normal
-        if highlight is None:
-            highlight = normal
-
-        if type(normal) == str:
-            self.orig_normal_surface = pygame.image.load(os.path.join(*normal))
-        if type(toggle) == str:
-            self.orig_toggle_surface = pygame.image.load(os.path.join(*toggle))
-        if type(highlight) == str:
-            self.orig_highlight_surface = pygame.image.load(os.path.join(*highlight))
-
-        self.normal_surface = self.orig_normal_surface
-        self.toggle_surface = self.orig_toggle_surface
-        self.highlight_surface = self.orig_highlight_surface
-        self.custom_surfaces = True
 
     def mouse_click(self, event):
         raise NotImplementedError("mouse_click not defined in subclass")
@@ -458,9 +422,20 @@ class Camera:
         return target.rect.move(self.state.topleft)
 
     def update(self, target):
-        self.state = self.simple_camera(self.state, target.rect)
+        self.state = self.complex_camera(self.state, target.rect)
 
     def simple_camera(self, camera, target_rect):
         l, t, _, _ = target_rect
         _, _, w, h = camera
         return pygame.Rect(-l + int(self.scene.director.screen_width / 2), -t + int(self.scene.director.screen_height / 2), w, h)
+
+    def complex_camera(self, camera, target_rect):
+        l, t, _, _ = target_rect
+        _, _, w, h = camera
+        l, _, _, _ = -l + int(self.scene.director.screen_width / 2), -t + int(self.scene.director.screen_height / 2), w, h
+        l = min(0, l)                           # stop scrolling at the left edge
+        l = max(-(camera.width - int(self.scene.director.screen_width)), l)   # stop scrolling at the right edge
+        t = max(-(camera.height - int(self.scene.director.screen_height)), t)  # stop scrolling at the bottom
+        t = min(0, t)
+
+        return pygame.Rect(l, t, w, h)

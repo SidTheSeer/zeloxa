@@ -1,5 +1,4 @@
 import pygame
-import sys
 import os
 from . import base
 
@@ -276,6 +275,8 @@ class PlatformScene(base.Scene):
     def shift_world(self, offset):
         for wall in self.walls:
             wall.rect.x += offset
+
+
 # /===================================/
 #  Basic wall class
 # /===================================/
@@ -322,7 +323,7 @@ class Player(DrawableGameObject):
             self.delta_x = 0
 
         if not self.grounded:
-            self.delta_y += 0.3
+            self.delta_y += 25 * self.scene.director.delta_time
 
         self.grounded = False
 
