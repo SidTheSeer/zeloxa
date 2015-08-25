@@ -5,8 +5,8 @@ import os
 pygame.font.init()
 pygame.mixer.init()
 
-DEFAULT_FONT = pygame.font.SysFont('Menlo', 35)
-NEW_FONT = pygame.font.SysFont('Helvetica', 90)
+DEFAULT_FONT = pygame.font.Font('Arial.ttf', 35)
+NEW_FONT = pygame.font.Font('Arial.ttf', 90)
 
 
 class Colors:
@@ -174,26 +174,25 @@ class GUIElement:
 
 
 class Text(GUIElement):
-    def __init__(self, rect=None, caption=None, font=None, font_color=Colors.WHITE, centered=True):
+    def __init__(self, rect=None, caption=None, font=DEFAULT_FONT, font_color=Colors.WHITE, centered=True):
         super().__init__(rect)
 
-        if caption is None:
-            self._caption = None
-        else:
-            self._caption = caption
+        # Set caption
+        self._caption = caption
 
-        if font is None:
-            self._font = DEFAULT_FONT
-        else:
-            self._font = font
+        # Set font
+        self._font = font
 
+        # Set font color
         self.font_color = font_color
 
+        # Default to is variable
         self._visible = True
 
         # Initialise surface
         self.surface = pygame.Surface(self.rect.size, pygame.SRCALPHA)
 
+        # Set centered text
         self._centered = centered
 
         # Update to fill surfaces for first time
@@ -432,10 +431,19 @@ class Camera:
     def complex_camera(self, camera, target_rect):
         l, t, _, _ = target_rect
         _, _, w, h = camera
-        l, _, _, _ = -l + int(self.scene.director.screen_width / 2), -t + int(self.scene.director.screen_height / 2), w, h
+        l, t, _, _ = -l + int(self.scene.director.screen_width / 2), -t + int(self.scene.director.screen_height / 2), w, h
         l = min(0, l)                           # stop scrolling at the left edge
         l = max(-(camera.width - int(self.scene.director.screen_width)), l)   # stop scrolling at the right edge
         t = max(-(camera.height - int(self.scene.director.screen_height)), t)  # stop scrolling at the bottom
-        t = min(0, t)
+        #t = min(0, t)
 
         return pygame.Rect(l, t, w, h)
+
+
+class ImageSurface(pygame.Surface):
+    def __init__(self, file_location):
+        source_image = pygame.image.load(os.path.join(*file_location)).convert().copy()
+        super().__init__((source_image.get_rect().width, source_image.get_rect().height))
+
+        self.blit(source_image, (0, 0, source_image.get_rect().width, source_image.get_rect().height))
+

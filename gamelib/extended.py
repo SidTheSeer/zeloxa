@@ -104,34 +104,34 @@ class BackgroundImage(base.Image):
         super().__init__(rect, image)
 
     def _update(self):
-        dest_width = self.rect.width
-        dest_height = self.rect.height
+        destination_width = self.rect.width
+        destination_height = self.rect.height
         source_width = self._source_image.get_rect().width
         source_height = self._source_image.get_rect().height
 
         image_ratio = source_width / source_height
-        dest_ratio = dest_width / dest_height
+        destination_ratio = destination_width / destination_height
 
         new_width = 0
         new_height = 0
 
         if self._image_type == 'contain':
-            if image_ratio <= dest_ratio:
-                new_width = dest_height * image_ratio
-                new_height = dest_height
-            elif image_ratio >= dest_ratio:
-                new_width = dest_width
-                new_height = dest_width / image_ratio
+            if image_ratio <= destination_ratio:
+                new_width = destination_height * image_ratio
+                new_height = destination_height
+            elif image_ratio >= destination_ratio:
+                new_width = destination_width
+                new_height = destination_width / image_ratio
         elif self._image_type == 'cover':
-            if image_ratio <= dest_ratio:
-                new_width = dest_width
-                new_height = dest_width / image_ratio
-            elif image_ratio >= dest_ratio:
-                new_width = dest_height * image_ratio
-                new_height = dest_height
+            if image_ratio <= destination_ratio:
+                new_width = destination_width
+                new_height = destination_width / image_ratio
+            elif image_ratio >= destination_ratio:
+                new_width = destination_height * image_ratio
+                new_height = destination_height
         elif self._image_type == 'static' or self._image_type is None:
-            new_width = dest_width
-            new_height = dest_height
+            new_width = destination_width
+            new_height = destination_height
 
         scaled_image = pygame.transform.smoothscale(self._source_image, (int(new_width), int(new_height)))
 
@@ -139,6 +139,12 @@ class BackgroundImage(base.Image):
         scaled_rect.center = int(self.rect.width / 2), int(self.rect.height / 2)
 
         self.surface.blit(scaled_image, scaled_rect)
+
+    def draw(self, screen, optional_rect=None):
+        if optional_rect is None:
+            screen.blit(self.surface, self.rect, (0, 0, self.rect.width, self.rect.height))
+        else:
+            screen.blit(self.surface, optional_rect, (0, 0, self.rect.width, self.rect.height))
 
 
 # /===================================/
@@ -223,27 +229,16 @@ class PlatformScene(base.Scene):
     def __init__(self, director=None, name=None, background=None, walls=None, player=None):
         super().__init__(director, name)
 
-        self.background = background
-        self.walls = []
         self.player = player
 
         self.player_movement = {'left': False, 'right': False, 'jump': False}
 
-        x, y = 0, 0
+        self.level = Level(['data', 'levels', 'level_1.txt'], 32)
 
-        for row in walls:
-            for col in row:
-                if col == "P":
-                    p = Wall(self, x, y, 32, 32)
-                    self.walls.append(p)
-                x += 32
-            y += 32
-            x = 0
+        self.camera = base.Camera(self, self.level.level_width, self.level.level_height)
 
-        total_level_width = len(walls[0]) * 32
-        total_level_height = len(walls) * 32
-
-        self.camera = base.Camera(self, total_level_width, total_level_height)
+        if type(background) is not None:
+            self.background = BackgroundImage((0, 0, self.level.level_width, self.level.level_height), background, 'cover')
 
     def on_event(self, events):
         for event in events:
@@ -261,20 +256,35 @@ class PlatformScene(base.Scene):
                     self.player_movement['right'] = False
 
     def on_update(self):
-        self.player.handle_movement(self.walls, self.player_movement)
+        self.player.handle_movement(self.level.objects, self.player_movement)
+
         self.camera.update(self.player)
 
     def on_draw(self, screen):
         screen.fill(base.Colors.BLACK)
 
-        for wall in self.walls:
-            wall.draw(screen, self.camera.apply(wall))
+        self.background.draw(screen, self.camera.apply(self.background))
+
+        for thing in self.level.objects:
+            thing.draw(screen, self.camera.apply(thing))
 
         self.player.draw(screen, self.camera.apply(self.player))
 
-    def shift_world(self, offset):
-        for wall in self.walls:
-            wall.rect.x += offset
+
+class NewPlatformScene(base.Scene):
+    def __init__(self, director=None, name=None, background=None, walls=None, player=None):
+        super().__init__(director, name)
+
+        self.player = player
+
+        self.player_movement = {'left': False, 'right': False, 'jump': False}
+
+        self.level = Level(['data', 'levels', 'level_1.dat'], 32)
+
+        self.camera = base.Camera(self, self.level.level_width, self.level)
+
+        if type(background) is not None:
+            self.background = BackgroundImage((0, 0, self.level.level_width, self.level.level_height), background, 'cover')
 
 
 # /===================================/
@@ -350,3 +360,89 @@ class Player(DrawableGameObject):
 
     def calculate_gravity(self):
         self.delta_y += 3 * self.scene.director.delta_time
+
+
+# /===================================/
+#  Utility functions class
+# /===================================/
+
+
+class Utility:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def center_rect(w, h, c_w, c_h):
+        w_center = int((c_w - w) / 2)
+        h_center = int((c_h - h) / 2)
+
+        return w_center, h_center
+
+
+# /===================================/
+#  Level interpreting class
+# /===================================/
+
+
+class Level:
+    def __init__(self, file, width_constant):
+        loading_stuff_test = LoadedImages(['assets', 'images', 'bricks.png'])
+
+        self.objects = []
+        
+        if type(file) is list:
+            filename = os.path.join(*file)
+            x = 0
+            y = 0
+
+            with open(filename) as fn:
+                level_data = fn.readlines()
+
+            new_level_data = []
+
+            for line in level_data:
+                new_level_data.append(line.rstrip())
+
+            level_data = list(filter(None, new_level_data))
+
+            for row in level_data:
+                for col in row:
+                    if col == "P":
+                        level_prop = Wall(self, x, y, width_constant, width_constant)
+                        self.objects.append(level_prop)
+                    elif col == "W":
+                        level_prop = ImageObject(self, x, y, width_constant, width_constant, loading_stuff_test['bricks.png'])
+                        self.objects.append(level_prop)
+                    x += width_constant
+                y += width_constant
+                x = 0
+
+            self.level_width = len(level_data[0]) * width_constant
+            self.level_height = len(level_data) * width_constant
+
+    # def __repr__(self):
+    #     return self.level
+
+
+class ImageObject(DrawableGameObject):
+    def __init__(self, scene=None, x=0, y=0, width=100, height=100, image_surface=None):
+        if type(image_surface) is list:
+            self._source = pygame.image.load(os.path.join(*image_surface)).convert()
+        else:
+            self._source = image_surface.copy()
+
+        super().__init__(scene, x, y, width, height)
+
+    def _update(self):
+        self.surface = pygame.transform.smoothscale(self._source, (int(self.width), int(self.height)))
+
+
+class LoadedImages:
+    def __init__(self, *args):
+        self.assets = {}
+        for asset in args:
+            self.assets[asset[-1]] = base.ImageSurface(asset)
+
+    def __getitem__(self, item):
+        return self.assets[item]
+

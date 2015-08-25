@@ -2,22 +2,21 @@ import pygame
 from gamelib import base
 from gamelib import extended
 
+utility = extended.Utility()
+
 
 class MainMenu(extended.MenuScene):
     def __init__(self, director=None):
         # Get button width and height positions
         button_width = 300
         button_height = 100
-        w = director.screen.get_rect().width
-        h = director.screen.get_rect().height
-        w_center = int((w - button_width) / 2)
-        h_center = int((h - button_height) / 2)
+        w_center, h_center = utility.center_rect(button_width, button_height, director.screen_width, director.screen_height)
 
         # Initialise
-        background = extended.BackgroundImage((0, 0, w, h), ['assets', 'images', 'test.jpg'], 'cover')
-        play_button = extended.MainMenuButton(self, {'click': ['load_scene', 'FirstScene']}, (w_center, h_center - 150, 300, 100), 'Play')
-        options_button = extended.MainMenuButton(self, None, (w_center, h_center, 300, 100), 'Options')
-        quit_button = extended.MainMenuButton(self, {'click': ['quit']}, (w_center, h_center + 150, 300, 100), 'Quit')
+        background = extended.BackgroundImage((0, 0, director.screen_width, director.screen_height), ['assets', 'images', 'test.jpg'], 'cover')
+        play_button = extended.MainMenuButton(self, {'click': ['load_scene', 'FirstScene']}, (w_center, h_center - 150, button_width, button_height), 'Play')
+        options_button = extended.MainMenuButton(self, None, (w_center, h_center, button_width, button_height), 'Options')
+        quit_button = extended.MainMenuButton(self, {'click': ['quit']}, (w_center, h_center + 150, button_width, button_height), 'Quit')
 
         buttons = [play_button, options_button, quit_button]
 
@@ -28,27 +27,11 @@ class MainMenu(extended.MenuScene):
         super().__init__(director, name, buttons, background, music)
 
 
-class MainMenu2(extended.MenuScene):
-    def __init__(self, director=None):
-        background = extended.BackgroundImage((0, 0, director.screen.get_rect().width, director.screen.get_rect().height), ['assets', 'images', 'test.jpg'], 'cover')
-
-        buttons = [extended.MainMenuButton(self, {'click': ['load_scene', 'MainMenu']}, (0, 0, 500, 100), 'SCENE2'), extended.MainMenuButton(self, None, (0, 300, 500, 100), 'DERP')]
-
-        music = None
-
-        name = 'MainMenu2'
-
-        super().__init__(director, name, buttons, background, music)
-
-
 class SplashScreen(base.Scene):
     def __init__(self, director=None):
         text_width = 500
         text_height = 150
-        w = director.screen.get_rect().width
-        h = director.screen.get_rect().height
-        w_center = int((w - text_width) / 2)
-        h_center = int((h - text_height) / 2)
+        w_center, h_center = utility.center_rect(text_width, text_height, director.screen_width, director.screen_height)
         name = 'Splash'
 
         super().__init__(director, name)
@@ -79,11 +62,11 @@ class SplashScreen(base.Scene):
 
 class FirstGameScene(extended.PlatformScene):
     def __init__(self, director=None):
-        player = extended.Player(self, 500, 0, 32, 32, 500)
+        player = extended.Player(self, 500, -1000, 32, 32, 500)
 
         name = 'FirstScene'
 
-        background = None
+        background = ['assets', 'images', 'test.jpg']
 
         walls = [
             "P                                          P",

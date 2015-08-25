@@ -13,8 +13,11 @@ pygame.init()
 
 # XXX: Comment your code
 
+# XXX: Add different tile types, triggering blocks (i.e exit blocks), get the other stuff above done I.E COLLISION LEVELS
+
 
 def main():
+    # Debug flag
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--debug", help="turn on debugging", action="store_true")
     args = parser.parse_args()
