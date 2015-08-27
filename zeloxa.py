@@ -9,11 +9,11 @@ pygame.init()
 
 # XXX: level design crap - collision and draw levels, same collision level they collide, render from 0 - *, make some constants i.e BASE, BACKGROUND, ENEMIES, PLAYER
 
-# XXX: More stuff to do - make a level config class i.e level, background etc.
-
 # XXX: Comment your code
 
 # XXX: Add different tile types, triggering blocks (i.e exit blocks), get the other stuff above done I.E COLLISION LEVELS
+
+# XXX: Make loading assets dynamic and not hard coded/baked (420 blaze it)
 
 
 def main():

@@ -435,7 +435,7 @@ class Camera:
         l = min(0, l)                           # stop scrolling at the left edge
         l = max(-(camera.width - int(self.scene.director.screen_width)), l)   # stop scrolling at the right edge
         t = max(-(camera.height - int(self.scene.director.screen_height)), t)  # stop scrolling at the bottom
-        #t = min(0, t)
+        t = min(0, t)
 
         return pygame.Rect(l, t, w, h)
 

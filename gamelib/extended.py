@@ -1,5 +1,6 @@
 import pygame
 import os
+import copy
 from . import base
 
 
@@ -32,6 +33,9 @@ class DrawableGameObject(base.GameObject):
             screen.blit(self.surface, self.rect)
         else:
             screen.blit(self.surface, optional_rect)
+
+    def duplicate(self):
+        raise NotImplementedError('duplicate not defined in subclass!')
 
 
 # /===================================/
@@ -225,68 +229,6 @@ class GameScene(base.Scene):
         pass
 
 
-class PlatformScene(base.Scene):
-    def __init__(self, director=None, name=None, background=None, walls=None, player=None):
-        super().__init__(director, name)
-
-        self.player = player
-
-        self.player_movement = {'left': False, 'right': False, 'jump': False}
-
-        self.level = Level(['data', 'levels', 'level_1.txt'], 32)
-
-        self.camera = base.Camera(self, self.level.level_width, self.level.level_height)
-
-        if type(background) is not None:
-            self.background = BackgroundImage((0, 0, self.level.level_width, self.level.level_height), background, 'cover')
-
-    def on_event(self, events):
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                self.player_movement['left'] = True if event.key == pygame.K_a else self.player_movement['left']
-                self.player_movement['right'] = True if event.key == pygame.K_d else self.player_movement['right']
-                self.player_movement['jump'] = True if event.key == pygame.K_w else self.player_movement['jump']
-
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_w:
-                    self.player_movement['jump'] = False
-                elif event.key == pygame.K_a:
-                    self.player_movement['left'] = False
-                elif event.key == pygame.K_d:
-                    self.player_movement['right'] = False
-
-    def on_update(self):
-        self.player.handle_movement(self.level.objects, self.player_movement)
-
-        self.camera.update(self.player)
-
-    def on_draw(self, screen):
-        screen.fill(base.Colors.BLACK)
-
-        self.background.draw(screen, self.camera.apply(self.background))
-
-        for thing in self.level.objects:
-            thing.draw(screen, self.camera.apply(thing))
-
-        self.player.draw(screen, self.camera.apply(self.player))
-
-
-class NewPlatformScene(base.Scene):
-    def __init__(self, director=None, name=None, background=None, walls=None, player=None):
-        super().__init__(director, name)
-
-        self.player = player
-
-        self.player_movement = {'left': False, 'right': False, 'jump': False}
-
-        self.level = Level(['data', 'levels', 'level_1.dat'], 32)
-
-        self.camera = base.Camera(self, self.level.level_width, self.level)
-
-        if type(background) is not None:
-            self.background = BackgroundImage((0, 0, self.level.level_width, self.level.level_height), background, 'cover')
-
-
 # /===================================/
 #  Basic wall class
 # /===================================/
@@ -295,6 +237,9 @@ class NewPlatformScene(base.Scene):
 class Wall(DrawableGameObject):
     def _update(self):
         self.surface.fill(base.Colors.RED)
+
+    def duplicate(self):
+        return Wall(self.scene, self.rect.x, self.rect.y, self.width, self.height)
 
 
 # /===================================/
@@ -361,6 +306,9 @@ class Player(DrawableGameObject):
     def calculate_gravity(self):
         self.delta_y += 3 * self.scene.director.delta_time
 
+    def duplicate(self):
+        pass
+
 
 # /===================================/
 #  Utility functions class
@@ -383,12 +331,13 @@ class Utility:
 #  Level interpreting class
 # /===================================/
 
-
+# Change this, add assets and dict of letters to entities, and make widths dynamic somehow if possible
 class Level:
-    def __init__(self, file, width_constant):
-        loading_stuff_test = LoadedImages(['assets', 'images', 'bricks.png'])
+    def __init__(self, file, width_constant, object_dict):
 
         self.objects = []
+
+        self.object_dict = object_dict
         
         if type(file) is list:
             filename = os.path.join(*file)
@@ -407,12 +356,12 @@ class Level:
 
             for row in level_data:
                 for col in row:
-                    if col == "P":
-                        level_prop = Wall(self, x, y, width_constant, width_constant)
-                        self.objects.append(level_prop)
-                    elif col == "W":
-                        level_prop = ImageObject(self, x, y, width_constant, width_constant, loading_stuff_test['bricks.png'])
-                        self.objects.append(level_prop)
+                    for key in self.object_dict.keys():
+                        if col == key:
+                            level_prop = self.object_dict[key].duplicate()
+                            level_prop.rect.x = x
+                            level_prop.rect.y = y
+                            self.objects.append(level_prop)
                     x += width_constant
                 y += width_constant
                 x = 0
@@ -436,6 +385,9 @@ class ImageObject(DrawableGameObject):
     def _update(self):
         self.surface = pygame.transform.smoothscale(self._source, (int(self.width), int(self.height)))
 
+    def duplicate(self):
+        return ImageObject(self.scene, self.rect.x, self.rect.y, self.width, self.height, self.surface)
+
 
 class LoadedImages:
     def __init__(self, *args):
@@ -446,3 +398,61 @@ class LoadedImages:
     def __getitem__(self, item):
         return self.assets[item]
 
+
+class AdvancedPlatformScene(base.Scene):
+    def __init__(self, director=None, level_config=None):
+        super().__init__(director, level_config['name'])
+
+        self.player = level_config['player']
+
+        self.player_movement = {'left': False, 'right': False, 'jump': False}
+
+        self.level = Level(level_config['file'], level_config['width_constant'], level_config['object_dict'])
+
+        self.camera = base.Camera(self, self.level.level_width, self.level.level_height)
+
+        if type(level_config['background']) is not None:
+            self.background = BackgroundImage((0, 0, self.level.level_width, self.level.level_height), level_config['background'], 'cover')
+
+    def on_event(self, events):
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                self.player_movement['left'] = True if event.key == pygame.K_a else self.player_movement['left']
+                self.player_movement['right'] = True if event.key == pygame.K_d else self.player_movement['right']
+                self.player_movement['jump'] = True if event.key == pygame.K_w else self.player_movement['jump']
+
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_w:
+                    self.player_movement['jump'] = False
+                elif event.key == pygame.K_a:
+                    self.player_movement['left'] = False
+                elif event.key == pygame.K_d:
+                    self.player_movement['right'] = False
+
+    def on_update(self):
+        self.player.handle_movement(self.level.objects, self.player_movement)
+
+        self.camera.update(self.player)
+
+    def on_draw(self, screen):
+        screen.fill(base.Colors.BLACK)
+
+        self.background.draw(screen, self.camera.apply(self.background))
+
+        for thing in self.level.objects:
+            thing.draw(screen, self.camera.apply(thing))
+
+        self.player.draw(screen, self.camera.apply(self.player))
+
+
+class LevelConfig:
+    def __init__(self, file, background, width_constant, config):
+        self.file = file
+        self.width_constant = width_constant
+        self.background = background
+        self.objects = {}
+        for key, value in config.iteritems():
+            self.objects[key] = value
+
+    def __getitem__(self, item):
+        return self.objects[item]

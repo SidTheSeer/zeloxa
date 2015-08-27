@@ -60,34 +60,23 @@ class SplashScreen(base.Scene):
         screen.blit(self.fade_in_stuff, self.fade_in_stuff.get_rect())
 
 
-class FirstGameScene(extended.PlatformScene):
+class FirstGameScene(extended.AdvancedPlatformScene):
     def __init__(self, director=None):
-        player = extended.Player(self, 500, -1000, 32, 32, 500)
+        level_assets = extended.LoadedImages(
+            ['assets', 'images', 'bricks.png'],
+            ['assets', 'images', 'SMOrc.jpg']
+        )
 
-        name = 'FirstScene'
+        level_config = {
+            'file': ['data', 'levels', 'level_1.txt'],
+            'object_dict': {
+                'W': extended.ImageObject(self, 0, 0, 32, 32, level_assets['bricks.png']),
+                'L': extended.Wall(self, 0, 0, 32, 32)
+            },
+            'width_constant': 32,
+            'background': ['assets', 'images', 'test.jpg'],
+            'name': 'FirstScene',
+            'player': extended.Player(self, 500, -1000, 32, 32, 500),
+        }
 
-        background = ['assets', 'images', 'test.jpg']
-
-        walls = [
-            "P                                          P",
-            "P                                          P",
-            "P                                          P",
-            "P                                          P",
-            "P                                          P",
-            "P                                          P",
-            "P                                          P",
-            "P                                          P",
-            "P                                          P",
-            "P                                          P",
-            "P                                          P",
-            "P                                          P",
-            "P                                          P",
-            "P                                          P",
-            "P       PPPPPPPPPPP                        P",
-            "P                                          P",
-            "P     PPPPPPPPPPPP                         P",
-            "P                                          P",
-            "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP",
-        ]
-
-        super().__init__(director, name, background, walls, player)
+        super().__init__(director, level_config)
