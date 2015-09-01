@@ -406,6 +406,9 @@ class GameObject:
         self.x = x
         self.y = y
 
+    def on_start(self):
+        pass
+
 
 # /===================================/
 #  Camera class

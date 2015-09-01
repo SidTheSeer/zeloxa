@@ -236,7 +236,7 @@ class GameScene(base.Scene):
 
 class Wall(DrawableGameObject):
     def _update(self):
-        self.surface.fill(base.Colors.RED)
+        self.surface.fill(base.Colors.BLUE)
 
     def duplicate(self):
         return Wall(self.scene, self.rect.x, self.rect.y, self.width, self.height)
@@ -414,6 +414,9 @@ class AdvancedPlatformScene(base.Scene):
         if type(level_config['background']) is not None:
             self.background = BackgroundImage((0, 0, self.level.level_width, self.level.level_height), level_config['background'], 'cover')
 
+        for entity in self.level.objects:
+            entity.on_start()
+
     def on_event(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
@@ -444,6 +447,10 @@ class AdvancedPlatformScene(base.Scene):
 
         self.player.draw(screen, self.camera.apply(self.player))
 
+    def spawn_entity(self, entity):
+        print('3')
+        self.level.objects.append(entity)
+
 
 class LevelConfig:
     def __init__(self, file, background, width_constant, config):
@@ -456,3 +463,20 @@ class LevelConfig:
 
     def __getitem__(self, item):
         return self.objects[item]
+
+
+class BasicEnemy(DrawableGameObject):
+    def __init__(self, scene=None, x=0, y=0, width=32, height=32):
+        super().__init__(scene, x, y, width, height)
+
+    def _update(self):
+        # self.surface.fill(base.Colors.GREEN)
+        self.surface.set_alpha(0)
+
+    def on_start(self):
+        print('2')
+        self.scene.spawn_entity(Wall(self.scene, self.x, self.y, self.width, self.height))
+
+    def duplicate(self):
+        print('1')
+        return BasicEnemy(self.scene, self.x, self.y, self.width, self.height)

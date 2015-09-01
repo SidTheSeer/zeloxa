@@ -71,7 +71,8 @@ class FirstGameScene(extended.AdvancedPlatformScene):
             'file': ['data', 'levels', 'level_1.txt'],
             'object_dict': {
                 'W': extended.ImageObject(self, 0, 0, 32, 32, level_assets['bricks.png']),
-                'L': extended.Wall(self, 0, 0, 32, 32)
+                'L': extended.Wall(self, 0, 0, 32, 32),
+                'E': extended.BasicEnemy(self, 0, 0, 32, 32)
             },
             'width_constant': 32,
             'background': ['assets', 'images', 'test.jpg'],

@@ -15,6 +15,10 @@ pygame.init()
 
 # XXX: Make loading assets dynamic and not hard coded/baked (420 blaze it)
 
+# XXX: add invisible layers to platform scene (integrate into the DIFFERENT LAYERS THAT YOU HAVENT DONE!!!!!! D:<)
+
+# XXX: add self deleting stuff
+
 
 def main():
     # Debug flag

@@ -15,7 +15,7 @@ W                                          W
 W                                          W
 W                                          W
 W                                          W
-W       LLLLLLLLLLLL                       W
+W       LLLLLLLLLLLL         E             W
 W                                          W
 W     WWWWWWWWWWWW                         W
 W                                          W
