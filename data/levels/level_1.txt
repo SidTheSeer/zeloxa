@@ -1,5 +1,6 @@
 W                                          W
 W                                          W
+W   E                                      W
 W                                          W
 W                                          W
 W                                          W
@@ -14,8 +15,7 @@ W                                          W
 W                                          W
 W                                          W
 W                                          W
-W                                          W
-W       LLLLLLLLLLLL         E             W
+W       LLLLLLLLLLLL                       W
 W                                          W
 W     WWWWWWWWWWWW                         W
 W                                          W

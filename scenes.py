@@ -12,7 +12,7 @@ class MainMenu(extended.MenuScene):
         button_height = 100
         w_center, h_center = utility.center_rect(button_width, button_height, director.screen_width, director.screen_height)
 
-        # Initialise
+        # Initialize
         background = extended.BackgroundImage((0, 0, director.screen_width, director.screen_height), ['assets', 'images', 'test.jpg'], 'cover')
         play_button = extended.MainMenuButton(self, {'click': ['load_scene', 'FirstScene']}, (w_center, h_center - 150, button_width, button_height), 'Play')
         options_button = extended.MainMenuButton(self, None, (w_center, h_center, button_width, button_height), 'Options')
@@ -70,14 +70,24 @@ class FirstGameScene(extended.AdvancedPlatformScene):
         level_config = {
             'file': ['data', 'levels', 'level_1.txt'],
             'object_dict': {
-                'W': extended.ImageObject(self, 0, 0, 32, 32, level_assets['bricks.png']),
-                'L': extended.Wall(self, 0, 0, 32, 32),
-                'E': extended.BasicEnemy(self, 0, 0, 32, 32)
+                'W': [extended.ImageObject(self, 0, 0, 32, 32, level_assets['bricks.png']), 1],
+                'L': [extended.Wall(self, 0, 0, 32, 32), 1],
+                'E': [extended.PhysicsObject(self, 0, 0, 32, 32), 2]
             },
             'width_constant': 32,
-            'background': ['assets', 'images', 'test.jpg'],
+            'background': ['assets', 'images', 'grass.jpg'],
             'name': 'FirstScene',
-            'player': extended.Player(self, 500, -1000, 32, 32, 500),
+            'player': [extended.Player(self, 500, 100, 32, 32, 500), 3]
         }
 
         super().__init__(director, level_config)
+
+    def on_update(self):
+        # Call the superclass on_update
+        super().on_update()
+
+        # For each enemy
+        for enemy in self.level[2]:
+            # Is it colliding with the player?
+            if enemy.rect.colliderect(self.player.rect):
+                self.director.handle_command(['load_scene', 'MainMenu'])

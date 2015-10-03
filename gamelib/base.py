@@ -1,6 +1,7 @@
 import pygame
 import sys
 import os
+import math
 
 pygame.font.init()
 pygame.mixer.init()
@@ -29,10 +30,12 @@ class Director:
         self.screen_width = 800
         self.screen_height = 600
 
+        # Set the icon
         icon = pygame.image.load('zeloxa.icns')
         pygame.display.set_icon(icon)
+
         # Initialise screen surface
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))  # , pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
 
         # Set game name
         pygame.display.set_caption(game_name)
@@ -105,6 +108,8 @@ class Director:
         # Pass a director reference to the scene
         self.active_scene.director = self
 
+        self.active_scene.on_reload()
+
     def quit(self):
         # Break the loop so the game ends
         self.quit_flag = True
@@ -134,15 +139,19 @@ class Scene:
 
     def on_event(self, event):
         # Pass events to scene for processing
-        raise NotImplementedError("on_event not defined in subclass")
+        raise NotImplementedError('on_event not defined in subclass!')
 
     def on_update(self):
         # Calculate game logic every frame
-        raise NotImplementedError("on_update not defined in subclass")
+        raise NotImplementedError('on_update not defined in subclass!')
 
     def on_draw(self, screen):
         # Draw surfaces within scene
-        raise NotImplementedError("on_draw not defined in subclass")
+        raise NotImplementedError('on_draw not defined in subclass!')
+
+    def on_reload(self):
+        # Reload the scene
+        pass
 
 
 # /===================================/
@@ -350,22 +359,22 @@ class Button(GUIElement):
             self.mouse_exit(event_object)
 
     def mouse_click(self, event):
-        raise NotImplementedError("mouse_click not defined in subclass")
+        raise NotImplementedError('mouse_click not defined in subclass')
 
     def mouse_enter(self, event):
-        raise NotImplementedError("mouse_enter not defined in subclass")
+        raise NotImplementedError('mouse_enter not defined in subclass')
 
     def mouse_exit(self, event):
-        raise NotImplementedError("mouse_exit not defined in subclass")
+        raise NotImplementedError('mouse_exit not defined in subclass')
 
     def mouse_move(self, event):
-        raise NotImplementedError("mouse_move not defined in subclass")
+        raise NotImplementedError('mouse_move not defined in subclass')
 
     def mouse_down(self, event):
-        raise NotImplementedError("mouse_down not defined in subclass")
+        raise NotImplementedError('mouse_down not defined in subclass')
 
     def mouse_up(self, event):
-        raise NotImplementedError("mouse_up not defined in subclass")
+        raise NotImplementedError('mouse_up not defined in subclass')
 
 
 # /===================================/
@@ -405,6 +414,7 @@ class GameObject:
         self.scene = scene
         self.x = x
         self.y = y
+        self.id = os.urandom(8)
 
     def on_start(self):
         pass
@@ -434,7 +444,7 @@ class Camera:
     def complex_camera(self, camera, target_rect):
         l, t, _, _ = target_rect
         _, _, w, h = camera
-        l, t, _, _ = -l + int(self.scene.director.screen_width / 2), -t + int(self.scene.director.screen_height / 2), w, h
+        l, t = -l + int(self.scene.director.screen_width / 2), -t + int(self.scene.director.screen_height / 2)
         l = min(0, l)                           # stop scrolling at the left edge
         l = max(-(camera.width - int(self.scene.director.screen_width)), l)   # stop scrolling at the right edge
         t = max(-(camera.height - int(self.scene.director.screen_height)), t)  # stop scrolling at the bottom
@@ -450,3 +460,6 @@ class ImageSurface(pygame.Surface):
 
         self.blit(source_image, (0, 0, source_image.get_rect().width, source_image.get_rect().height))
 
+
+def angle(angle):
+    return (angle) / 180 * math.pi

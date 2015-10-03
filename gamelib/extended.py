@@ -1,6 +1,5 @@
 import pygame
 import os
-import copy
 from . import base
 
 
@@ -36,6 +35,9 @@ class DrawableGameObject(base.GameObject):
 
     def duplicate(self):
         raise NotImplementedError('duplicate not defined in subclass!')
+
+    def on_update(self, *args, **kwargs):
+        pass
 
 
 # /===================================/
@@ -137,7 +139,7 @@ class BackgroundImage(base.Image):
             new_width = destination_width
             new_height = destination_height
 
-        scaled_image = pygame.transform.smoothscale(self._source_image, (int(new_width), int(new_height)))
+        scaled_image = pygame.transform.scale(self._source_image, (int(new_width), int(new_height))).convert()
 
         scaled_rect = scaled_image.get_rect()
         scaled_rect.center = int(self.rect.width / 2), int(self.rect.height / 2)
@@ -197,6 +199,9 @@ class MainMenuButton(base.Button):
         pass
 
     def mouse_up(self, event):
+        pass
+
+    def duplicate(self):
         pass
 
 
@@ -262,52 +267,89 @@ class Player(DrawableGameObject):
         self.surface.fill(base.Colors.BLUE)
 
     def handle_movement(self, collision_objects, movement):
+        # Reset the x velocity each frame
         self.delta_x = 0
 
-        if movement['jump']:
-            if self.grounded:
-                self.delta_y -= 10
+        # Check if grounded
+        self.grounded = self.check_grounded(collision_objects)
 
+        # If player pressed the jump key
+        if movement['jump']:
+            # If we're grounded
+            if self.grounded:
+                # Give ourselves upward velocity
+                self.delta_y -= 12
+
+        # If player pressed the move left key
         if movement['left']:
             self.delta_x = -self.movement_rate * self.scene.director.delta_time
 
+        # If player pressed the move right key
         if movement['right']:
             self.delta_x = self.movement_rate * self.scene.director.delta_time
 
+        # If player pressed both keys at the same time
         if movement['right'] and movement['left']:
             self.delta_x = 0
 
-        if not self.grounded:
-            self.delta_y += 25 * self.scene.director.delta_time
+        # Gravity
+        self.delta_y += 25 * self.scene.director.delta_time
 
-        self.grounded = False
-
-        self.rect.x += self.delta_x
-
-        for wall in collision_objects:
-            if self.rect.colliderect(wall.rect):
-                if self.delta_x > 0:
-                    self.rect.right = wall.rect.left
-                elif self.delta_x < 0:
-                    self.rect.left = wall.rect.right
-
-        self.rect.y += self.delta_y
+        # Move ourselves on the x axis
+        self.rect.x += int(self.delta_x)
 
         for wall in collision_objects:
-            if self.rect.colliderect(wall.rect):
-                if self.delta_y > 0:
-                    self.rect.bottom = wall.rect.top
-                    self.grounded = True
-                elif self.delta_y < 0:
-                    self.rect.top = wall.rect.bottom
+            # If we actually changed positions
+            if self.delta_x != 0:
+                # If we collide with something and its not ourselves
+                if self.rect.colliderect(wall.rect) and wall.id != self.id:
+                    # If we're going right, then reset our right edge
+                    if self.delta_x > 0:
+                        self.rect.right = wall.rect.left
+                    # If we're going left, reset our left edge
+                    elif self.delta_x < 0:
+                        self.rect.left = wall.rect.right
 
-                self.delta_y = 0
+        # Move ourselves on the y axis
+        self.rect.y += int(self.delta_y)
 
-    def calculate_gravity(self):
-        self.delta_y += 3 * self.scene.director.delta_time
+        for wall in collision_objects:
+            # If we actually changed positions
+            if self.delta_y != 0:
+                # If we collide with something and its not ourselves
+                if self.rect.colliderect(wall.rect) and wall.id != self.id:
+                    # If we're going up, then reset our top edge
+                    if self.delta_y > 0:
+                        self.rect.bottom = wall.rect.top
+                        # Not needed anymore but I'll keep it here anyway
+                        self.grounded = True
+                    # If we're going down, then reset our bottom edge
+                    elif self.delta_y < 0:
+                        self.rect.top = wall.rect.bottom
+                        self.grounded = False
+
+                    self.delta_y = 0
 
     def duplicate(self):
         pass
+
+    def check_grounded(self, collision_objects):
+        # Reset variable
+        colliding = False
+
+        # Get the rect to check our grounded condition
+        # The rect has a width of the original, a height of one and sits
+        # one unit below the original rect
+        checking_rect = pygame.Rect(int(self.rect.x), int(self.rect.y + self.rect.height), int(self.rect.width), 1)
+
+        # For each object that we can be grounded on
+        for wall in collision_objects:
+            # Check if the rect collides with it
+            if checking_rect.colliderect(wall.rect):
+                colliding = True
+
+        # Return the value
+        return colliding
 
 
 # /===================================/
@@ -331,46 +373,87 @@ class Utility:
 #  Level interpreting class
 # /===================================/
 
-# Change this, add assets and dict of letters to entities, and make widths dynamic somehow if possible
+
 class Level:
-    def __init__(self, file, width_constant, object_dict):
+    def __init__(self, file_name, width_constant, object_dict):
+        # Initialise the dictionary of all the objects in the layers
+        self.layers = {}
 
-        self.objects = []
-
+        # Set the object dictionary
         self.object_dict = object_dict
-        
-        if type(file) is list:
-            filename = os.path.join(*file)
+
+        # For each key within the object dictionary
+        for key in self.object_dict.keys():
+            # Get its layer number
+            layer_number = self.object_dict[key][1]
+
+            # Initialise the layer it will be in
+            self.layers[layer_number] = []
+
+        # If the level file sent is a list
+        if type(file_name) is list:
+            # Join the array values into a file name
+            filename = os.path.join(*file_name)
+
+            # Initialise x and y for the spawning process
             x = 0
             y = 0
 
+            # With the level file
             with open(filename) as fn:
+                # Get the lines/level data
                 level_data = fn.readlines()
 
+            # Initialise the interpreted data
             new_level_data = []
 
+            # Strip the empty lines
             for line in level_data:
                 new_level_data.append(line.rstrip())
 
+            # Strip empty stuff
             level_data = list(filter(None, new_level_data))
 
+            # For each line in the level data file
             for row in level_data:
+                # For each character on the line
                 for col in row:
+                    # For each key within the object dictionary
                     for key in self.object_dict.keys():
+                        # If the character is equal the to the key
                         if col == key:
-                            level_prop = self.object_dict[key].duplicate()
+                            # Get its intended layer
+                            layer = self.object_dict[key][1]
+
+                            # Duplicate the object
+                            level_prop = self.object_dict[key][0].duplicate()
+
+                            # Set the x and y coordinates for this object
                             level_prop.rect.x = x
                             level_prop.rect.y = y
-                            self.objects.append(level_prop)
+
+                            # Add it to the layer its intended to be in
+                            self.layers[layer].append(level_prop)
                     x += width_constant
                 y += width_constant
+
+                # Reset the x position at the beginning of each new line
                 x = 0
 
+            # Set the display value for the level width and height
+            # At the moment this is only used in the camera
             self.level_width = len(level_data[0]) * width_constant
             self.level_height = len(level_data) * width_constant
 
-    # def __repr__(self):
-    #     return self.level
+    # Have the layers accessible without calling level.layers[i]
+    # But rather level[i]
+    def __getitem__(self, item):
+        return self.layers[item]
+
+
+# /===================================/
+#  Image object class
+# /===================================/
 
 
 class ImageObject(DrawableGameObject):
@@ -389,6 +472,11 @@ class ImageObject(DrawableGameObject):
         return ImageObject(self.scene, self.rect.x, self.rect.y, self.width, self.height, self.surface)
 
 
+# /===================================/
+#  Loaded images class
+# /===================================/
+
+
 class LoadedImages:
     def __init__(self, *args):
         self.assets = {}
@@ -399,31 +487,41 @@ class LoadedImages:
         return self.assets[item]
 
 
+# /===================================/
+#  Platform scene class
+# /===================================/
+
+
 class AdvancedPlatformScene(base.Scene):
     def __init__(self, director=None, level_config=None):
         super().__init__(director, level_config['name'])
 
-        self.player = level_config['player']
+        self.level_config = level_config
 
+        # Define the player
+        self.player = self.level_config['player'][0]
+
+        # Define the player movement dictionary
         self.player_movement = {'left': False, 'right': False, 'jump': False}
 
-        self.level = Level(level_config['file'], level_config['width_constant'], level_config['object_dict'])
+        # Define the level object
+        self.level = Level(self.level_config['file'], self.level_config['width_constant'], self.level_config['object_dict'])
 
+        # Define the camera offset object
         self.camera = base.Camera(self, self.level.level_width, self.level.level_height)
 
-        if type(level_config['background']) is not None:
-            self.background = BackgroundImage((0, 0, self.level.level_width, self.level.level_height), level_config['background'], 'cover')
-
-        for entity in self.level.objects:
-            entity.on_start()
+        # Set the level background
+        if type(self.level_config['background']) is not None:
+            self.background = BackgroundImage((0, 0, self.level.level_width, self.level.level_height), self.level_config['background'], 'cover')
 
     def on_event(self, events):
         for event in events:
+            # For player movement keys being pressed down
             if event.type == pygame.KEYDOWN:
                 self.player_movement['left'] = True if event.key == pygame.K_a else self.player_movement['left']
                 self.player_movement['right'] = True if event.key == pygame.K_d else self.player_movement['right']
                 self.player_movement['jump'] = True if event.key == pygame.K_w else self.player_movement['jump']
-
+            # For player movement keys being let up
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_w:
                     self.player_movement['jump'] = False
@@ -433,28 +531,55 @@ class AdvancedPlatformScene(base.Scene):
                     self.player_movement['right'] = False
 
     def on_update(self):
-        self.player.handle_movement(self.level.objects, self.player_movement)
+        # Handle player movement first
+        self.player.handle_movement(self.level[1], self.player_movement)
 
+        # For each object in the physical layer level
+        # Call its on_update function
+        for layer_number, level_layer in self.level.layers.items():
+            for level_object in level_layer:
+                level_object.on_update(self.level[1])
+
+        # Update the camera offset to the position
+        # of the player before drawing the objects
         self.camera.update(self.player)
 
     def on_draw(self, screen):
+        # Fill the background with black first
+        # This gets rid of any object streaking effects
         screen.fill(base.Colors.BLACK)
 
+        # Draw the background first
         self.background.draw(screen, self.camera.apply(self.background))
 
-        for thing in self.level.objects:
-            thing.draw(screen, self.camera.apply(thing))
+        # For each object in the physical level layer
+        # Call its draw function
+        for layer_number, level_layer in self.level.layers.items():
+            for level_object in level_layer:
+                level_object.draw(screen, self.camera.apply(level_object))
 
+        # Draw the player last
         self.player.draw(screen, self.camera.apply(self.player))
 
-    def spawn_entity(self, entity):
-        print('3')
-        self.level.objects.append(entity)
+    def on_reload(self):
+        self.player_movement = {'left': False, 'right': False, 'jump': False}
+
+        self.level = Level(self.level_config['file'], self.level_config['width_constant'], self.level_config['object_dict'])
+
+        self.player = self.level_config['player'][0]
+
+        self.player.rect.x, self.player.rect.y = self.level_config['player'][0].rect.x, self.level_config['player'][0].rect.y
+
+
+# /===================================/
+#  Level config class
+# /===================================/
+# !!! NOT EVEN SURE IF USED !!!
 
 
 class LevelConfig:
-    def __init__(self, file, background, width_constant, config):
-        self.file = file
+    def __init__(self, level_file, background, width_constant, config):
+        self.level_file = level_file
         self.width_constant = width_constant
         self.background = background
         self.objects = {}
@@ -465,18 +590,59 @@ class LevelConfig:
         return self.objects[item]
 
 
-class BasicEnemy(DrawableGameObject):
+# /===================================/
+#  Physics object class
+# /===================================/
+
+
+class PhysicsObject(DrawableGameObject):
     def __init__(self, scene=None, x=0, y=0, width=32, height=32):
         super().__init__(scene, x, y, width, height)
+        self.grounded = False
+        self.delta_x = 0
+        self.delta_y = 0
 
     def _update(self):
-        # self.surface.fill(base.Colors.GREEN)
-        self.surface.set_alpha(0)
-
-    def on_start(self):
-        print('2')
-        self.scene.spawn_entity(Wall(self.scene, self.x, self.y, self.width, self.height))
+        self.surface.fill(base.Colors.GREEN)
 
     def duplicate(self):
-        print('1')
-        return BasicEnemy(self.scene, self.x, self.y, self.width, self.height)
+        return PhysicsObject(self.scene, self.x, self.y, self.width, self.height)
+
+    def on_update(self, collision_objects):
+        self.delta_x = 0
+
+        player_x = self.scene.player.rect.x
+        self_x = self.rect.x
+        diff = abs(player_x - self_x)
+
+        if player_x < self_x and diff > 5:
+            self.delta_x = -200 * self.scene.director.delta_time
+        elif player_x > self_x and diff > 5:
+            self.delta_x = 200 * self.scene.director.delta_time
+
+        if not self.grounded:
+            self.delta_y += 25 * self.scene.director.delta_time
+
+        self.grounded = False
+
+        self.rect.x += int(self.delta_x)
+
+        for wall in collision_objects:
+            if self.delta_x != 0:
+                if self.rect.colliderect(wall.rect) and wall.id != self.id:
+                    if self.delta_x > 0:
+                        self.rect.right = wall.rect.left
+                    elif self.delta_x < 0:
+                        self.rect.left = wall.rect.right
+
+        self.rect.y += int(self.delta_y)
+
+        for wall in collision_objects:
+            if self.rect.colliderect(wall.rect) and wall.id != self.id:
+                if self.delta_y > 0:
+                    self.rect.bottom = wall.rect.top
+                    self.grounded = True
+                elif self.delta_y < 0:
+                    self.rect.top = wall.rect.bottom
+
+                self.delta_y = 0
