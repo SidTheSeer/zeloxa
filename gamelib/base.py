@@ -53,6 +53,7 @@ class Director:
         # Initialise delta time variables
         self.delta_time = 0
         self.elapsed_time = 0
+        self.scene_elapsed_time = 0
 
     def loop(self):
         # Main game loop
@@ -60,6 +61,7 @@ class Director:
             # Get a 'global' delta time variable for scenes to access
             self.delta_time = self.clock.tick(60) / 1000
             self.elapsed_time = pygame.time.get_ticks() - self.start_time
+            self.scene_elapsed_time += self.scene_start_time + self.delta_time * 1000
 
             # Get all pygame events in current frame
             events = pygame.event.get()
@@ -108,7 +110,11 @@ class Director:
         # Pass a director reference to the scene
         self.active_scene.director = self
 
+        # Call the on_reload for the scene
         self.active_scene.on_reload()
+
+        self.scene_start_time = 0
+        self.scene_elapsed_time = 0
 
     def quit(self):
         # Break the loop so the game ends
@@ -220,6 +226,9 @@ class Text(GUIElement):
         if self._centered:
             caption_rect.center = int(w / 2), int(h / 2)
 
+        # Reset the text surface
+        self.surface.fill((0, 0, 0, 0))
+
         # Blit text to surface
         self.surface.blit(rendered_text, caption_rect)
 
@@ -300,7 +309,7 @@ class Button(GUIElement):
         self.highlight_surface.fill(self._bgcolor)
 
         # Draw the caption text
-        rendered_text = self._font.render(self._caption, True, self.font_color, self._bgcolor)
+        rendered_text = self._font.render(self._caption, True, self.font_color)
         caption_rect = rendered_text.get_rect()
         caption_rect.center = int(w / 2), int(h / 2)
         self.normal_surface.blit(rendered_text, caption_rect)
@@ -455,10 +464,10 @@ class Camera:
 
 class ImageSurface(pygame.Surface):
     def __init__(self, file_location):
-        source_image = pygame.image.load(os.path.join(*file_location)).convert().copy()
-        super().__init__((source_image.get_rect().width, source_image.get_rect().height))
+        source_image = pygame.image.load(os.path.join(*file_location)).convert()
+        super().__init__((source_image.get_rect().width, source_image.get_rect().height), 0, source_image)
 
-        self.blit(source_image, (0, 0, source_image.get_rect().width, source_image.get_rect().height))
+        self.blit(source_image, self.get_rect(), (0, 0, source_image.get_rect().width, source_image.get_rect().height))
 
 
 def angle(angle):
