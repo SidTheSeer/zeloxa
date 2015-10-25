@@ -104,6 +104,9 @@ class Director:
         # Fill screen with black to clear all previous outputs
         self.screen.fill(Colors.BLACK)
 
+        if self.active_scene is not None:
+            self.active_scene.on_exit()
+
         # Set the active scene for the main game loop
         self.active_scene = self.scenes[scene_name]
 
@@ -111,7 +114,7 @@ class Director:
         self.active_scene.director = self
 
         # Call the on_reload for the scene
-        self.active_scene.on_reload()
+        self.active_scene.on_load()
 
         self.scene_start_time = 0
         self.scene_elapsed_time = 0
@@ -155,8 +158,12 @@ class Scene:
         # Draw surfaces within scene
         raise NotImplementedError('on_draw not defined in subclass!')
 
-    def on_reload(self):
-        # Reload the scene
+    def on_load(self):
+        # Called when the scene is loaded
+        pass
+
+    def on_exit(self):
+        # Called when the scene is exited
         pass
 
 
@@ -462,13 +469,61 @@ class Camera:
         return pygame.Rect(l, t, w, h)
 
 
+# /===================================/
+#  Image surface class
+# /===================================/
+
+
 class ImageSurface(pygame.Surface):
-    def __init__(self, file_location):
+    def __init__(self, file_location, transform=None):
         source_image = pygame.image.load(os.path.join(*file_location)).convert()
+
+        if type(transform) is tuple:
+            source_image = pygame.transform.scale(source_image, transform).convert()
+
         super().__init__((source_image.get_rect().width, source_image.get_rect().height), 0, source_image)
 
         self.blit(source_image, self.get_rect(), (0, 0, source_image.get_rect().width, source_image.get_rect().height))
 
 
+class ColorSurface(pygame.Surface):
+    def __init__(self, rect, color):
+        super().__init__(rect)
+
+        self.fill(color)
+
+
 def angle(angle):
     return (angle) / 180 * math.pi
+
+
+def find_start_times(start_times, target):
+    lb = 0
+    ub = len(start_times) - 1
+
+    if len(start_times) == 0:
+        return 0
+    if target >= start_times[-1]:
+        return ub - 1
+
+    while True:
+        i = int((ub - lb) / 2) + lb
+
+        if start_times[i] == target or (start_times[i] < target and start_times[i+1] > target):
+            if i == len(start_times):
+                return i - 1
+            else:
+                return i
+
+        if start_times[i] < target:
+            lb = i
+        elif start_times[i] > target:
+            ub = i
+
+
+def middle_value(lower_bound, value, upper_bound):
+    if value < lower_bound:
+        return lower_bound
+    elif value > upper_bound:
+        return upper_bound
+    return value

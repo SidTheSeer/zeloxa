@@ -7,8 +7,6 @@ pygame.init()
 
 # XXX: get debug stuff done
 
-# XXX: TRY OUT POSSIBLE RENDER STUFF LAYERZ
-
 # XXX: Comment your code
 
 # XXX: Add different tile types, triggering blocks (i.e exit blocks), get
@@ -16,17 +14,13 @@ pygame.init()
 
 # XXX: add self deleting stuff
 
-# XXX: ADD MARGIN FOR ERROR TO ENEMY AI THING
-# XXX: LIKE 10 UNITS OR SOMETHING
-
 # XXX: GROUND DETECTION ON PLAYER REGISTER ON THE ENEMY AND STACKS BECAUSE IT DOESNT COLLIDE AND YOU GO SHOOTING UP
 
 
 def main():
     # Debug flag
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-d", "--debug", help="turn on debugging", action="store_true")
+    parser.add_argument("-d", "--debug", help="turn on debugging", action="store_true")
     args = parser.parse_args()
 
     # Initialise director

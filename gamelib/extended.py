@@ -1,5 +1,6 @@
 import pygame
 import os
+import time
 from . import base
 
 
@@ -160,7 +161,7 @@ class BackgroundImage(base.Image):
 
 class MainMenuButton(base.Button):
     def __init__(self, scene, commands, rect, caption):
-        border_config = {'normal': {'color': base.Colors.WHITE, 'width': 10}, 'toggle': {'color': base.Colors.BLUE, 'width': 10}, 'highlight': {'color': base.Colors.RED, 'width': 10}}
+        border_config = {'normal': {'color': base.Colors.WHITE, 'width': 10}, 'toggle': {'color': base.Colors.BLACK, 'width': 10}, 'highlight': {'color': base.Colors.RED, 'width': 10}}
         super().__init__(rect, caption, base.DEFAULT_FONT, base.Colors.WHITE, base.Colors.BLACK, border_config)
 
         self.scene = scene
@@ -253,7 +254,7 @@ class Wall(DrawableGameObject):
 
 
 class Player(DrawableGameObject):
-    def __init__(self, scene=None, x=0, y=0, width=32, height=32, movement_rate=3):
+    def __init__(self, scene=None, x=0, y=0, width=32, height=32, movement_rate=3, dead_animation=None):
         self.movement_rate = movement_rate
 
         self.delta_x = 0
@@ -261,10 +262,17 @@ class Player(DrawableGameObject):
 
         self.grounded = False
 
+        self.dead = False
+
+        self.dead_animation = dead_animation
+
         super().__init__(scene, x, y, width, height)
 
     def _update(self):
-        self.surface.fill(base.Colors.BLUE)
+        if self.dead:
+            self.surface.blit(self.dead_animation.get_surface(), (0, 0))
+        else:
+            self.surface.fill(base.Colors.GREEN)
 
     def handle_movement(self, collision_objects, movement):
         # Reset the x velocity each frame
@@ -331,7 +339,7 @@ class Player(DrawableGameObject):
                     self.delta_y = 0
 
     def duplicate(self):
-        pass
+        return Player(self.scene, self.rect.x, self.rect.y, self.rect.width, self.rect.height, self.movement_rate, self.dead_animation)
 
     def check_grounded(self, collision_objects):
         # Reset variable
@@ -351,6 +359,14 @@ class Player(DrawableGameObject):
         # Return the value
         return colliding
 
+    def set_dead(self):
+        self.dead = True
+        self._update()
+
+    def set_alive(self):
+        if self.dead:
+            self.dead = False
+            self._update()
 
 # /===================================/
 #  Utility functions class
@@ -466,7 +482,7 @@ class ImageObject(DrawableGameObject):
         super().__init__(scene, x, y, width, height)
 
     def _update(self):
-        self.surface = pygame.transform.smoothscale(self._source, (int(self.width), int(self.height)))
+        self.surface = pygame.transform.scale(self._source, (int(self.width), int(self.height))).convert()
 
     def duplicate(self):
         return ImageObject(self.scene, self.rect.x, self.rect.y, self.width, self.height, self.surface)
@@ -499,7 +515,7 @@ class AdvancedPlatformScene(base.Scene):
         self.level_config = level_config
 
         # Define the player
-        self.player = self.level_config['player'][0]
+        self.player = self.level_config['player'][0].duplicate()
 
         # Define the player movement dictionary
         self.player_movement = {'left': False, 'right': False, 'jump': False}
@@ -561,12 +577,12 @@ class AdvancedPlatformScene(base.Scene):
         # Draw the player last
         self.player.draw(screen, self.camera.apply(self.player))
 
-    def on_reload(self):
+    def on_exit(self):
         self.player_movement = {'left': False, 'right': False, 'jump': False}
 
         self.level = Level(self.level_config['file'], self.level_config['width_constant'], self.level_config['object_dict'])
 
-        self.player = self.level_config['player'][0]
+        self.player = self.level_config['player'][0].duplicate()
 
         self.player.rect.x, self.player.rect.y = self.level_config['player'][0].rect.x, self.level_config['player'][0].rect.y
 
@@ -615,9 +631,9 @@ class PhysicsObject(DrawableGameObject):
         self_x = self.rect.x
         diff = abs(player_x - self_x)
 
-        if player_x < self_x and diff > 5:
+        if player_x < self_x and diff > 2:
             self.delta_x = -200 * self.scene.director.delta_time
-        elif player_x > self_x and diff > 5:
+        elif player_x > self_x and diff > 2:
             self.delta_x = 200 * self.scene.director.delta_time
 
         if not self.grounded:
@@ -646,3 +662,140 @@ class PhysicsObject(DrawableGameObject):
                     self.rect.top = wall.rect.bottom
 
                 self.delta_y = 0
+
+
+class DynamicText(base.Text):
+    def update_text(self, text):
+        self._caption = str(text)
+        self._update()
+
+
+class Animation:
+    def __init__(self, frames):
+        self.images = []
+        self.durations = []
+        self.start_times = []
+
+        self._state = 2
+        self.loop = False
+        self.rate = 1
+
+        self.play_start_time = 0
+        self.pause_start_time = 0
+
+        self.num_frames = len(frames)
+        # Add exception for length
+
+        for i in range(self.num_frames):
+            frame = frames[i]
+
+            # Add exceptions here
+
+            if type(frame[0]) == str:
+                frame = (pygame.image.load(frame[0]), frame[1])
+
+            self.images.append(frame[0].convert_alpha())
+            self.durations.append(frame[1])
+
+        self.start_times = self.get_start_times()
+
+    def get_start_times(self):
+        start_times = [0]
+
+        for i in range(self.num_frames):
+            start_times.append(start_times[-1] + self.durations[i])
+
+        return start_times
+
+    def get_elapsed(self):
+        if self._state == 2:
+            return 0
+
+        if self._state == 1:
+            elapsed = (time.time() - self.play_start_time) * self.rate
+        elif self._state == 0:
+            elapsed = (self.pause_start_time - self.play_start_time) * self.rate
+
+        if self.loop:
+            elapsed = elapsed % self.start_times[-1]
+        else:
+            elapsed = base.middle_value(0, elapsed, self.start_times[-1])
+
+        elapsed += 0.00001
+
+        return elapsed
+
+    def set_elapsed(self, elapsed):
+        elapsed += 0.00001
+
+        if self.loop:
+            elapsed = elapsed % self.start_times[-1]
+        else:
+            elapsed = base.middle_value(0, elapsed, self.start_times[-1])
+
+        right_now = time.time()
+        self.play_start_time = right_now - (elapsed * self.rate)
+
+        if self.state in (0, 2):
+            self.state = 0
+            self.pause_start_time = right_now
+
+    elapsed = property(get_elapsed, set_elapsed)
+
+    def get_state(self):
+        if self.is_finished():
+            self._state = 2
+
+        return self._state
+
+    def set_state(self, state):
+        if state not in (0, 1, 2):
+            raise Exception('WRONG STATE')
+        if state == 1:
+            self.play()
+        elif state == 0:
+            self.pause()
+        elif state == 2:
+            self.stop()
+
+    state = property(get_state, set_state)
+
+    def get_surface(self):
+        frame_number = base.find_start_times(self.start_times, self.get_elapsed())
+        return self.images[frame_number]
+
+    def is_finished(self):
+        return not self.loop and self.elapsed >= self.start_times[-1]
+
+    def play(self):
+        start_time = time.time()
+
+        if self._state == 1:
+            if self.is_finished():
+                self.play_start_time = start_time
+        elif self._state == 0:
+            self.play_start_time = start_time - (self.pause_start_time - self.play_start_time)
+        elif self._state == 2:
+            self.play_start_time = start_time
+
+        self._state = 1
+
+    def pause(self):
+        start_time = time.time()
+
+        if self._state == 0:
+            return
+        elif self._state == 1:
+            self.pause_start_time = start_time
+        elif self._state == 2:
+            right_now = time.time()
+            self.play_start_time = right_now
+            self.pause_start_time = right_now
+
+        self._state = 0
+
+    def stop(self):
+        if self._state == 2:
+            return
+
+        self._state = 2
