@@ -80,6 +80,8 @@ class Director:
             # Update scene
             self.active_scene.on_update()
 
+            self.screen.fill((0, 0, 0))
+
             # Draw the screen
             self.active_scene.on_draw(self.screen)
 

@@ -1,0 +1,658 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"paus",
+				"pause_start_time"
+			],
+			[
+				"pau",
+				"pause_start_time"
+			],
+			[
+				"right",
+				"right_now"
+			],
+			[
+				"pause",
+				"pause_start_time	statement"
+			],
+			[
+				"play",
+				"play_start_time	statement"
+			],
+			[
+				"frame",
+				"frame_number	statement"
+			],
+			[
+				"player",
+				"player_reborn_time"
+			],
+			[
+				"Back",
+				"BackgroundImage	class"
+			],
+			[
+				"level",
+				"level_assets	statement"
+			],
+			[
+				"act",
+				"active_scene	statement"
+			],
+			[
+				"Not",
+				"NotImplementedError	class"
+			],
+			[
+				"laer",
+				"layer_number	forstmt"
+			],
+			[
+				"layer",
+				"layer_number"
+			],
+			[
+				"object",
+				"object_dict"
+			],
+			[
+				"delt",
+				"delta_y"
+			],
+			[
+				"coll",
+				"colliding"
+			],
+			[
+				"check",
+				"checking_rect"
+			],
+			[
+				"move",
+				"movement_rate	statement"
+			],
+			[
+				"movem",
+				"movement_rate	param"
+			],
+			[
+				"on",
+				"on_update"
+			],
+			[
+				"angle",
+				"angle_to_player	statement"
+			],
+			[
+				"delta",
+				"delta_time"
+			],
+			[
+				"center",
+				"center_rect"
+			],
+			[
+				"Draw",
+				"DrawableGameObject	class"
+			],
+			[
+				"Main",
+				"MainMenuButton	class"
+			],
+			[
+				"slide",
+				"slide_7_toggled"
+			],
+			[
+				"current",
+				"currentSlide"
+			],
+			[
+				"wr",
+				"writeText"
+			],
+			[
+				"guess",
+				"guess_config"
+			],
+			[
+				"gue",
+				"guess"
+			],
+			[
+				"batt",
+				"battleship_config"
+			],
+			[
+				"game",
+				"gameName"
+			],
+			[
+				"zeloxa",
+				"zeloxa"
+			],
+			[
+				"main",
+				"mainMenu1"
+			],
+			[
+				"ele",
+				"element"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "scenes.py",
+			"settings":
+			{
+				"buffer_size": 5065,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "zeloxa.py",
+			"settings":
+			{
+				"buffer_size": 1245,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "gamelib/extended.py",
+			"settings":
+			{
+				"buffer_size": 25286,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 124.0,
+		"last_filter": "set syntax C++",
+		"selected_items":
+		[
+			[
+				"set syntax C++",
+				"Set Syntax: C++"
+			],
+			[
+				"git diff",
+				"Git: Diff Current File"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"goto",
+				"Anaconda: Goto object definition"
+			],
+			[
+				"python",
+				"Set Syntax: Python"
+			],
+			[
+				"insa",
+				"Package Control: Install Package"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"list",
+				"Package Control: List Packages"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"list pac",
+				"Package Control: List Unmanaged Packages"
+			],
+			[
+				"got o",
+				"Anaconda: Goto object definition"
+			],
+			[
+				"got ot",
+				"Anaconda: Goto object definition"
+			],
+			[
+				"rmeove",
+				"Package Control: Remove Channel"
+			],
+			[
+				"re",
+				"Git (SideBarGit): Revert: unstage"
+			],
+			[
+				"git pus",
+				"Git: Push"
+			],
+			[
+				"git push",
+				"Git: Push"
+			],
+			[
+				"git comm",
+				"Git: Commit"
+			],
+			[
+				"git stat",
+				"Git: Status"
+			],
+			[
+				"package control",
+				"Package Control: Enable Package"
+			],
+			[
+				"disable",
+				"Package Control: Disable Package"
+			],
+			[
+				"toggle min",
+				"View: Toggle Minimap"
+			],
+			[
+				"update",
+				"Package Control: Upgrade/Overwrite All Packages"
+			],
+			[
+				"git ",
+				"Git: Show"
+			],
+			[
+				"sidebar",
+				"Side Bar: Refresh"
+			],
+			[
+				"isntal",
+				"Package Control: Install Package"
+			],
+			[
+				"auto",
+				"Anaconda: Autoformat PEP8 Errors"
+			],
+			[
+				"insat",
+				"Package Control: Install Package"
+			],
+			[
+				"anaconda",
+				"Anaconda: Autoformat PEP8 Errors"
+			],
+			[
+				"list ",
+				"Package Control: List Packages"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 431.0
+	},
+	"console":
+	{
+		"height": 139.0,
+		"history":
+		[
+			"exit_insert_mode()",
+			"exit_insert_mode",
+			"exit_command_mode",
+			"import urllib.request,os,hashlib; h = '2915d1851351e5ee549c20394736b442' + '8bc59f460fa1548d1514676163dafc88'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/Users/jacobsalway/Git/zeloxa"
+	],
+	"file_history":
+	[
+		"/Users/jacobsalway/Git/zeloxa/gamelib/base.py",
+		"/Users/jacobsalway/Library/Application Support/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/Users/jacobsalway/Git/zeloxa/l.cpp",
+		"/Users/jacobsalway/Library/Application Support/Sublime Text 3/Packages/Default/Default (OSX).sublime-keymap",
+		"/Users/jacobsalway/Library/Application Support/Sublime Text 3/Packages/User/Default (OSX).sublime-keymap",
+		"/Users/jacobsalway/Library/Application Support/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/Users/jacobsalway/Library/Application Support/Sublime Text 3/Packages/Anaconda/README.md",
+		"/Users/jacobsalway/Git/zeloxa/dist/zeloxa.app/Contents/Resources/gamelib/extended.py",
+		"/Users/jacobsalway/Git/zeloxa/README.md",
+		"/Users/jacobsalway/Git/zeloxa/.gitignore",
+		"/Users/jacobsalway/Git/assessemble ze project!/Battleship/battleship.py",
+		"/Users/jacobsalway/Git/ist-challenges/battleship.py",
+		"/Users/jacobsalway/Git/ist-challenges/inventory.py",
+		"/Users/jacobsalway/Git/ist-challenges/bob.py",
+		"/Users/jacobsalway/Git/ist-challenges/double.py",
+		"/Volumes/ENGLISH/Jacob Salway IRP/index.html",
+		"/Users/jacobsalway/Desktop/英語のIRP/intro.css",
+		"/Users/jacobsalway/Desktop/英語のIRP/index.html",
+		"/Users/jacobsalway/Downloads/assignment-10-thomas-abarbanel.py",
+		"/Users/jacobsalway/Git/ist-challenges/highscore/highscore.py",
+		"/Users/jacobsalway/Git/ist-challenges/HighScore.py",
+		"/Users/jacobsalway/Downloads/HighScore.py",
+		"/Users/jacobsalway/Desktop/英語のIRP/jquery-2.1.4.js",
+		"/Users/jacobsalway/Git/zeloxa/setup.py",
+		"/Users/jacobsalway/Git/test/game23.py",
+		"/Users/jacobsalway/Desktop/untitled.py",
+		"/Users/jacobsalway/Git/zeloxa/build/bdist.macosx-10.6-intel/python3.4-standalone/app/collect/gamelib/gamelib.pyc",
+		"/Users/jacobsalway/Desktop/unpyc3.py",
+		"/Users/jacobsalway/Desktop/gamelib.pyc_dis_failed",
+		"/Users/jacobsalway/Desktop/gamelib.pyc_dis",
+		"/Users/jacobsalway/Desktop/extended.py",
+		"/Users/jacobsalway/Git/test/scroller.py",
+		"/Users/jacobsalway/Git/test/script.py",
+		"/Users/jacobsalway/Git/Basic-Platformer-Test/lib/draw.py",
+		"/Users/jacobsalway/Git/Basic-Platformer-Test/main.py",
+		"/Users/jacobsalway/Git/Basic-Platformer-Test/lib/camera.py",
+		"/Users/jacobsalway/Git/zeloxa/scenes.py",
+		"/Users/jacobsalway/Git/zeloxa/gamelib/gamelib.py",
+		"/Users/jacobsalway/Git/zeloxa/zeloxa.py",
+		"/Users/jacobsalway/Git/pygame-mutiscene-template-with-movie/data/states/splash.py",
+		"/Users/jacobsalway/Git/test-pygame-stuff/game.py",
+		"/Users/jacobsalway/Desktop/PythonImproved.tmLanguage",
+		"/Users/jacobsalway/Desktop/pygbutton.py",
+		"/Users/jacobsalway/Desktop/test.py",
+		"/Users/jacobsalway/Git/Basic-Platformer-Test/profiler.py",
+		"/Users/jacobsalway/Git/zeloxa/zeloxascenes.py",
+		"/Users/jacobsalway/Git/ist-pygame/zeloxa/gamelib.py"
+	],
+	"find":
+	{
+		"height": 70.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"'",
+			"index.html",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"pygame.transform",
+			"ADvancedPlatformScene",
+			"get_state()",
+			"self.elapsed",
+			"font",
+			"Drawabkle",
+			"button",
+			"MainMenuButt",
+			"pygame.image.load",
+			"on_reload",
+			"BackgroundImage",
+			"ImageSurface",
+			"BackgroundImage",
+			"\"",
+			"Scene",
+			"Level",
+			"LevelConfig",
+			"print",
+			"Level",
+			"spawn_entity",
+			"PhysicsObject",
+			"Player",
+			"player",
+			".level",
+			"PhysicsObject",
+			"drawableG",
+			"backgroundImage",
+			"BackgroundImage",
+			"Level",
+			"slide1",
+			"0",
+			"[0-9]",
+			"js-[0-9]",
+			"stage-[0-9]",
+			"stage-[0-9$1]",
+			"stage-[0-9]",
+			"stage-[0-9]$",
+			"stage-[0-9]",
+			"gamelib",
+			"gravity",
+			"Gamelib"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": true,
+		"replace_history":
+		[
+			"state",
+			"'",
+			"js-$&",
+			"",
+			"stage js-$+",
+			"stage js-$&",
+			"stage js-$1",
+			"stage js-$",
+			"stage js-[0-9]"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "scenes.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5065,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3744,
+								3744
+							]
+						],
+						"settings":
+						{
+							"color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1025.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "zeloxa.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1245,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								648,
+								648
+							]
+						],
+						"settings":
+						{
+							"color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "gamelib/extended.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 25286,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								15236,
+								15252
+							]
+						],
+						"settings":
+						{
+							"color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 7567.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 26.0
+	},
+	"input":
+	{
+		"height": 66.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.git-commit":
+	{
+		"height": 138.0
+	},
+	"output.git-push":
+	{
+		"height": 138.0
+	},
+	"pinned_build_system": "",
+	"project": "zeloxa.sublime-project",
+	"replace":
+	{
+		"height": 114.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 169.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

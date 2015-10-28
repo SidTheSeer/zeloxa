@@ -38,8 +38,7 @@ class SplashScreen(base.Scene):
 
         self.developer_name = base.Text((w_center, h_center, text_width, text_height), 'Zeloxa', base.NEW_FONT, base.Colors.WHITE)
 
-        self.fade_in_stuff = pygame.Surface((director.screen.get_rect().width, director.screen.get_rect().height))
-        self.fade_in_stuff.fill(base.Colors.BLACK)
+        self.fade_in_stuff = base.ColorSurface((director.screen.get_rect().width, director.screen.get_rect().height), base.Colors.BLACK)
         self.alpha = 255
 
     def on_event(self, events):
@@ -48,8 +47,9 @@ class SplashScreen(base.Scene):
                 self.director.handle_command(['load_scene', 'MainMenu'])
 
     def on_update(self):
-        self.alpha -= 50 * self.director.delta_time
-        self.fade_in_stuff.set_alpha(max(self.alpha, 0))
+        if self.director.scene_elapsed_time >= 750:
+            self.alpha -= 60 * self.director.delta_time
+            self.fade_in_stuff.set_alpha(max(self.alpha, 0))
 
         if self.director.scene_elapsed_time >= 6000:
             self.director.handle_command(['load_scene', 'MainMenu'])
@@ -62,23 +62,32 @@ class SplashScreen(base.Scene):
 
 class FirstGameScene(extended.AdvancedPlatformScene):
     def __init__(self, director=None):
+        text_width = 700
+        text_height = 150
+        w_center, h_center = utility.center_rect(text_width, text_height, director.screen_width, director.screen_height)
+
         level_assets = extended.LoadedImages(
-            ['assets', 'images', 'bricks.pcx']
+            ['assets', 'images', 'bricks.pcx'],
+            ['assets', 'images', 'heart.pcx']
         )
 
+        red_surface = base.ColorSurface((100, 100), base.Colors.RED)
         green_surface = base.ColorSurface((100, 100), base.Colors.GREEN)
 
         self.test_animation_thing = extended.Animation([
-            (level_assets['bricks.pcx'], 0.4),
-            (green_surface, 0.4),
-            (level_assets['bricks.pcx'], 0.4),
-            (green_surface, 0.4),
-            (level_assets['bricks.pcx'], 0.4),
-            (green_surface, 0.4)
+            (red_surface, 0.2),
+            (green_surface, 0.2),
+            (red_surface, 0.2),
+            (green_surface, 0.2),
+            (red_surface, 0.2),
+            (green_surface, 0.2),
+            (red_surface, 0.2),
+            (green_surface, 0.2),
+            (red_surface, 0.2),
+            (green_surface, 0.2),
         ])
 
-        self.test_animation_thing.play()
-        self.test_animation_thing.loop = True
+        self.test_animation_thing.loop = False
 
         level_config = {
             'file': ['data', 'levels', 'level_1.txt'],
@@ -94,7 +103,7 @@ class FirstGameScene(extended.AdvancedPlatformScene):
         }
 
         self.player_variables = {
-            'invulnerable_time': 3000,
+            'invulnerable_time': 2000,
             'lives': 3
         }
 
@@ -105,7 +114,16 @@ class FirstGameScene(extended.AdvancedPlatformScene):
 
         super().__init__(director, level_config)
 
-        self.lives_text = extended.DynamicText((0, 0, 500, 100), 'Lives', base.DEFAULT_FONT, base.Colors.WHITE)
+        self.lives_text = extended.DynamicText((director.screen_width - 88, 33, 50, 50), 'Lives', base.DEFAULT_FONT, base.Colors.WHITE)
+
+        self.life_counter = base.ImageSurface(['assets', 'images', 'heart.pcx'], (85, 85))
+        self.life_counter.set_colorkey((255, 255, 255), pygame.RLEACCEL)
+
+        self.fade_in_stuff = base.ColorSurface((director.screen.get_rect().width, director.screen.get_rect().height), base.Colors.BLACK)
+        self.game_over_text = base.Text((w_center, h_center, text_width, text_height), 'Game over!', base.NEW_FONT, base.Colors.WHITE)
+        self.fade_in_stuff.blit(self.game_over_text.surface, self.game_over_text.rect)
+        self.fade_in_stuff.set_alpha(0)
+        self.alpha = 0
 
     def on_event(self, events):
         # Call the superclass on_event
@@ -119,8 +137,9 @@ class FirstGameScene(extended.AdvancedPlatformScene):
         for enemy in self.level[2]:
             # Is it colliding with the player?
             if enemy.rect.colliderect(self.player.rect) and self.director.scene_elapsed_time > self.player_runtime['player_reborn_time']:
-                if self.player_runtime['current_lives'] <= 0:
-                    pass
+                if 0 < self.player_runtime['current_lives'] <= 1:
+                    self.game_over = True
+                    self.player_runtime['current_lives'] -= 1
                 elif self.player_runtime['current_lives'] > 0:
                     self.player_runtime['player_reborn_time'] = self.director.scene_elapsed_time + self.player_variables['invulnerable_time']
                     self.player_runtime['current_lives'] -= 1
@@ -134,8 +153,16 @@ class FirstGameScene(extended.AdvancedPlatformScene):
 
         self.lives_text.update_text(self.player_runtime['current_lives'])
 
+        if self.game_over:
+            self.alpha += 70 * self.director.delta_time
+            self.fade_in_stuff.set_alpha(min(self.alpha, 255))
+
     def on_draw(self, screen):
         # Call the superclass on_draw
         super().on_draw(screen)
 
+        screen.blit(self.life_counter, (self.director.screen_width - 105, 20, 85, 85))
+
         self.lives_text.draw(screen)
+
+        screen.blit(self.fade_in_stuff, (0, 0))

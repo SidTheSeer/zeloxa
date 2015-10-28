@@ -16,7 +16,7 @@ class DrawableGameObject(base.GameObject):
         self.width = width
         self.height = height
 
-        self.surface = pygame.Surface((self.width, self.height))
+        self.surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
 
         self.rect = self.surface.get_rect()
 
@@ -29,7 +29,7 @@ class DrawableGameObject(base.GameObject):
         raise NotImplementedError('_update not defined in subclass')
 
     def draw(self, screen, optional_rect=None):
-        if type(optional_rect) is None:
+        if optional_rect is None:
             screen.blit(self.surface, self.rect)
         else:
             screen.blit(self.surface, optional_rect)
@@ -270,8 +270,10 @@ class Player(DrawableGameObject):
 
     def _update(self):
         if self.dead:
+            self.dead_animation.play()
             self.surface.blit(self.dead_animation.get_surface(), (0, 0))
         else:
+            self.dead_animation.stop()
             self.surface.fill(base.Colors.GREEN)
 
     def handle_movement(self, collision_objects, movement):
@@ -530,10 +532,12 @@ class AdvancedPlatformScene(base.Scene):
         if type(self.level_config['background']) is not None:
             self.background = BackgroundImage((0, 0, self.level.level_width, self.level.level_height), self.level_config['background'], 'cover')
 
+        self.game_over = False
+
     def on_event(self, events):
         for event in events:
             # For player movement keys being pressed down
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN and not self.game_over:
                 self.player_movement['left'] = True if event.key == pygame.K_a else self.player_movement['left']
                 self.player_movement['right'] = True if event.key == pygame.K_d else self.player_movement['right']
                 self.player_movement['jump'] = True if event.key == pygame.K_w else self.player_movement['jump']
@@ -547,6 +551,11 @@ class AdvancedPlatformScene(base.Scene):
                     self.player_movement['right'] = False
 
     def on_update(self):
+        if self.game_over:
+            self.player_movement['jump'] = False
+            self.player_movement['left'] = False
+            self.player_movement['right'] = False
+
         # Handle player movement first
         self.player.handle_movement(self.level[1], self.player_movement)
 
@@ -585,6 +594,8 @@ class AdvancedPlatformScene(base.Scene):
         self.player = self.level_config['player'][0].duplicate()
 
         self.player.rect.x, self.player.rect.y = self.level_config['player'][0].rect.x, self.level_config['player'][0].rect.y
+
+        self.game_over = False
 
 
 # /===================================/
@@ -631,9 +642,9 @@ class PhysicsObject(DrawableGameObject):
         self_x = self.rect.x
         diff = abs(player_x - self_x)
 
-        if player_x < self_x and diff > 2:
+        if player_x < self_x and 250 > diff > 2:
             self.delta_x = -200 * self.scene.director.delta_time
-        elif player_x > self_x and diff > 2:
+        elif player_x > self_x and 250 > diff > 2:
             self.delta_x = 200 * self.scene.director.delta_time
 
         if not self.grounded:
@@ -691,10 +702,12 @@ class Animation:
 
             # Add exceptions here
 
-            if type(frame[0]) == str:
-                frame = (pygame.image.load(frame[0]), frame[1])
+            if type(frame[0]) == list:
+                frame = (pygame.image.load(os.path.join(*frame[0])).convert_alpha(), frame[1])
+            elif frame[0] is None:
+                frame = (pygame.Surface((0, 0)), frame[1])
 
-            self.images.append(frame[0].convert_alpha())
+            self.images.append(frame[0])
             self.durations.append(frame[1])
 
         self.start_times = self.get_start_times()

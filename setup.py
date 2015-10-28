@@ -9,14 +9,17 @@ from setuptools import setup
 
 APP = ['zeloxa.py']
 DATA_FILES = [
-	('', ['assets']),
-	('', ['zeloxa.icns']),
-	('', ['gamelib'])
+    ('', ['assets']),
+    ('', ['zeloxa.icns']),
+    ('', ['gamelib']),
+    ('', ['data']),
+    ('', ['scenes.py']),
+    ('', ['Arial.ttf'])
 
 ]
 OPTIONS = {
-	'argv_emulation': True,
-	'iconfile': 'zeloxa.icns'
+    'argv_emulation': True,
+    'iconfile': 'zeloxa.icns'
 }
 
 setup(
