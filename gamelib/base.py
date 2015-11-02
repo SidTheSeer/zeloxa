@@ -6,10 +6,12 @@ import math
 pygame.font.init()
 pygame.mixer.init()
 
+# hehe its not actually Arial
 DEFAULT_FONT = pygame.font.Font('Arial.ttf', 35)
 NEW_FONT = pygame.font.Font('Arial.ttf', 90)
 
-
+# Ease of access
+# Who can be stuffed to remember RGB codes anyway
 class Colors:
     RED = (255, 0, 0)
     GREEN = (0, 255, 0)
@@ -31,11 +33,11 @@ class Director:
         self.screen_height = 600
 
         # Set the icon
-        icon = pygame.image.load('zeloxa.icns')
-        pygame.display.set_icon(icon)
+        # icon = pygame.image.load('zeloxa.icns')
+        # pygame.display.set_icon(icon)
 
         # Initialise screen surface
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))  # , pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))  # , pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF) (seemed to have no effect)
 
         # Set game name
         pygame.display.set_caption(game_name)
@@ -80,6 +82,7 @@ class Director:
             # Update scene
             self.active_scene.on_update()
 
+            # Refill the screen
             self.screen.fill((0, 0, 0))
 
             # Draw the screen
@@ -89,6 +92,7 @@ class Director:
             pygame.display.flip()
 
         # If we break the loop exit the game
+        # So many people without this and I couldn't close their games
         pygame.quit()
         sys.exit()
 
@@ -118,6 +122,7 @@ class Director:
         # Call the on_reload for the scene
         self.active_scene.on_load()
 
+        # Reset the elapsed time variables
         self.scene_start_time = 0
         self.scene_elapsed_time = 0
 
@@ -331,7 +336,6 @@ class Button(GUIElement):
             pygame.draw.rect(self.highlight_surface, self._border['highlight']['color'], pygame.Rect((0, 0, w, h)), self._border['highlight']['width'])
 
     def handle_event(self, event_object):
-
         # If event is not relevant or button not visible
         if event_object.type not in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP) or not self._visible:
             return
@@ -449,21 +453,25 @@ class Camera:
         self.scene = scene
 
     def apply(self, target):
+        # Return the changed rectangle based on the camera offset
         return target.rect.move(self.state.topleft)
 
     def update(self, target):
+        # Update the offset based on the position of the active object
         self.state = self.complex_camera(self.state, target.rect)
 
     def simple_camera(self, camera, target_rect):
+        # Disregard
         l, t, _, _ = target_rect
         _, _, w, h = camera
         return pygame.Rect(-l + int(self.scene.director.screen_width / 2), -t + int(self.scene.director.screen_height / 2), w, h)
 
     def complex_camera(self, camera, target_rect):
+        # The algorithm/function that calculates the offset.
         l, t, _, _ = target_rect
         _, _, w, h = camera
         l, t = -l + int(self.scene.director.screen_width / 2), -t + int(self.scene.director.screen_height / 2)
-        l = min(0, l)                           # stop scrolling at the left edge
+        l = min(0, l)  # stop scrolling at the left edge
         l = max(-(camera.width - int(self.scene.director.screen_width)), l)   # stop scrolling at the right edge
         t = max(-(camera.height - int(self.scene.director.screen_height)), t)  # stop scrolling at the bottom
         t = min(0, t)
@@ -478,27 +486,34 @@ class Camera:
 
 class ImageSurface(pygame.Surface):
     def __init__(self, file_location, transform=None):
+        # Get the image file
         source_image = pygame.image.load(os.path.join(*file_location)).convert()
 
+        # If there is a transform
         if type(transform) is tuple:
+            # Transform the image
             source_image = pygame.transform.scale(source_image, transform).convert()
 
         super().__init__((source_image.get_rect().width, source_image.get_rect().height), 0, source_image)
 
+        # Blit the transformed image to our surface
         self.blit(source_image, self.get_rect(), (0, 0, source_image.get_rect().width, source_image.get_rect().height))
+
+
+# /===================================/
+#  Color surface class
+# /===================================/
 
 
 class ColorSurface(pygame.Surface):
     def __init__(self, rect, color):
         super().__init__(rect)
 
+        # Self-explanatory.
         self.fill(color)
 
-
-def angle(angle):
-    return (angle) / 180 * math.pi
-
-
+# Couldn't find anywhere better to put this.
+# Basically the algorithm to find the start time in an array based on numbers and return an index.
 def find_start_times(start_times, target):
     lb = 0
     ub = len(start_times) - 1
@@ -523,6 +538,7 @@ def find_start_times(start_times, target):
             ub = i
 
 
+# Ease of use
 def middle_value(lower_bound, value, upper_bound):
     if value < lower_bound:
         return lower_bound

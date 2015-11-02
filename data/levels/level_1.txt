@@ -1,22 +1,22 @@
-W                                          W
-W                                          W
-W   E                                      W
-W                                          W
-W                                          W
-W                                          W
-W                                          W
-W                                          W
-W                                          W
-W                                          W
-W                                          W
-W                                          W
-W                                          W
-W                                          W
-W                                          W
-W                                          W
-W                                          W
-W       LLLLLLLLLLLL                       W
-W                                          W
-W     WWWWWWWWWWWW                         W
-W                                          W
-WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+W                                                                        W
+W                                                                        W
+W                                                                        W
+W                                                                        W
+W                                                                        W
+W                                                                        W
+W                                                                        W
+W                                                                        W
+W                                                                        W
+W                                                                        W
+W                                                                        W
+W                                                                        W
+W                                                                        W
+W         E                                                              W
+W                                                                        W
+W                                                       W                W
+W                                                                        W
+W      WWWWWWWWWWWWW  W        E     W   W         E                AAAAAW
+W                     W   WWWWWWW    W    W    W        W           AAAAAW
+W     WWWWWWWWWWWW    W              W    W   W               W     AAAAAW
+W                                    W      W           W     W     AAAAAW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW

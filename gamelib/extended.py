@@ -1,6 +1,7 @@
 import pygame
 import os
 import time
+import math
 from . import base
 
 
@@ -13,15 +14,21 @@ class DrawableGameObject(base.GameObject):
     def __init__(self, scene=None, x=0, y=0, width=100, height=100):
         super().__init__(scene, x, y)
 
+        # Width and height
         self.width = width
         self.height = height
 
+        # The surface
         self.surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
 
+        # The rect
         self.rect = self.surface.get_rect()
 
+        # Set the x and y
         self.rect.x = x
         self.rect.y = y
+
+        # Call the update method
 
         self._update()
 
@@ -35,6 +42,7 @@ class DrawableGameObject(base.GameObject):
             screen.blit(self.surface, optional_rect)
 
     def duplicate(self):
+        # Necessary for level interpretation
         raise NotImplementedError('duplicate not defined in subclass!')
 
     def on_update(self, *args, **kwargs):
@@ -111,6 +119,7 @@ class BackgroundImage(base.Image):
         super().__init__(rect, image)
 
     def _update(self):
+        # Synatic sugar
         destination_width = self.rect.width
         destination_height = self.rect.height
         source_width = self._source_image.get_rect().width
@@ -122,6 +131,8 @@ class BackgroundImage(base.Image):
         new_width = 0
         new_height = 0
 
+        # Algorithm for containing and covering images based on ratios
+        # Semi-inspired by a blog post I found somewhere
         if self._image_type == 'contain':
             if image_ratio <= destination_ratio:
                 new_width = destination_height * image_ratio
@@ -140,11 +151,14 @@ class BackgroundImage(base.Image):
             new_width = destination_width
             new_height = destination_height
 
+        # Transform the image based off the ratio
         scaled_image = pygame.transform.scale(self._source_image, (int(new_width), int(new_height))).convert()
 
+        # Get the rect
         scaled_rect = scaled_image.get_rect()
         scaled_rect.center = int(self.rect.width / 2), int(self.rect.height / 2)
 
+        # Blit it
         self.surface.blit(scaled_image, scaled_rect)
 
     def draw(self, screen, optional_rect=None):
@@ -161,11 +175,13 @@ class BackgroundImage(base.Image):
 
 class MainMenuButton(base.Button):
     def __init__(self, scene, commands, rect, caption):
+        # The border config
         border_config = {'normal': {'color': base.Colors.WHITE, 'width': 10}, 'toggle': {'color': base.Colors.BLACK, 'width': 10}, 'highlight': {'color': base.Colors.RED, 'width': 10}}
         super().__init__(rect, caption, base.DEFAULT_FONT, base.Colors.WHITE, base.Colors.BLACK, border_config)
 
         self.scene = scene
 
+        # If we have some click commands
         if type(commands) is dict:
             self.click_command = commands['click'] if 'click' in commands else None
             self.enter_command = commands['enter'] if 'enter' in commands else None
@@ -185,12 +201,13 @@ class MainMenuButton(base.Button):
         if self.click_command is not None:
             self.scene.director.handle_command(self.click_command)
 
+
+    # This stuff was never used because I didn't need it
+    # However it does function as it should
     def mouse_enter(self, event):
-        # pygame.mouse.set_cursor(*cursors.hover)
         pass
 
     def mouse_exit(self, event):
-        # pygame.mouse.set_cursor(*cursors.normal)
         pass
 
     def mouse_move(self, event):
@@ -237,6 +254,7 @@ class GameScene(base.Scene):
 
 # /===================================/
 #  Basic wall class
+#  Was the first basic wall I used
 # /===================================/
 
 
@@ -255,26 +273,33 @@ class Wall(DrawableGameObject):
 
 class Player(DrawableGameObject):
     def __init__(self, scene=None, x=0, y=0, width=32, height=32, movement_rate=3, dead_animation=None):
+        # Movement rate
         self.movement_rate = movement_rate
 
+        # Change on each axis
         self.delta_x = 0
         self.delta_y = 0
 
+        # Whether we're groudned
         self.grounded = False
 
+        # Whether we're dead
         self.dead = False
 
+        # Our dead animation
         self.dead_animation = dead_animation
 
         super().__init__(scene, x, y, width, height)
 
     def _update(self):
+        # If dead, play the animation
         if self.dead:
             self.dead_animation.play()
             self.surface.blit(self.dead_animation.get_surface(), (0, 0))
+        # Else do normal stuff
         else:
             self.dead_animation.stop()
-            self.surface.fill(base.Colors.GREEN)
+            self.surface.fill(base.Colors.BLUE)
 
     def handle_movement(self, collision_objects, movement):
         # Reset the x velocity each frame
@@ -304,6 +329,7 @@ class Player(DrawableGameObject):
 
         # Gravity
         self.delta_y += 25 * self.scene.director.delta_time
+        self.delta_y = min(15, self.delta_y)
 
         # Move ourselves on the x axis
         self.rect.x += int(self.delta_x)
@@ -370,8 +396,10 @@ class Player(DrawableGameObject):
             self.dead = False
             self._update()
 
+
 # /===================================/
 #  Utility functions class
+#  Pretty useless
 # /===================================/
 
 
@@ -476,14 +504,17 @@ class Level:
 
 class ImageObject(DrawableGameObject):
     def __init__(self, scene=None, x=0, y=0, width=100, height=100, image_surface=None):
+        # If image file then load it
         if type(image_surface) is list:
             self._source = pygame.image.load(os.path.join(*image_surface)).convert()
+        # If surface then copy it
         else:
             self._source = image_surface.copy()
 
         super().__init__(scene, x, y, width, height)
 
     def _update(self):
+        # Transform the image to fit dimensions
         self.surface = pygame.transform.scale(self._source, (int(self.width), int(self.height))).convert()
 
     def duplicate(self):
@@ -498,10 +529,13 @@ class ImageObject(DrawableGameObject):
 class LoadedImages:
     def __init__(self, *args):
         self.assets = {}
+        # For each file reference sent
+        # Load it in and make a surface for it
         for asset in args:
             self.assets[asset[-1]] = base.ImageSurface(asset)
 
     def __getitem__(self, item):
+        # Make this class an iterable object
         return self.assets[item]
 
 
@@ -514,6 +548,7 @@ class AdvancedPlatformScene(base.Scene):
     def __init__(self, director=None, level_config=None):
         super().__init__(director, level_config['name'])
 
+        # Level config
         self.level_config = level_config
 
         # Define the player
@@ -527,6 +562,9 @@ class AdvancedPlatformScene(base.Scene):
 
         # Define the camera offset object
         self.camera = base.Camera(self, self.level.level_width, self.level.level_height)
+
+        # Set the background music
+        self.music = self.level_config['music']
 
         # Set the level background
         if type(self.level_config['background']) is not None:
@@ -551,6 +589,7 @@ class AdvancedPlatformScene(base.Scene):
                     self.player_movement['right'] = False
 
     def on_update(self):
+        # If game over the player can't move
         if self.game_over:
             self.player_movement['jump'] = False
             self.player_movement['left'] = False
@@ -570,10 +609,6 @@ class AdvancedPlatformScene(base.Scene):
         self.camera.update(self.player)
 
     def on_draw(self, screen):
-        # Fill the background with black first
-        # This gets rid of any object streaking effects
-        screen.fill(base.Colors.BLACK)
-
         # Draw the background first
         self.background.draw(screen, self.camera.apply(self.background))
 
@@ -586,7 +621,20 @@ class AdvancedPlatformScene(base.Scene):
         # Draw the player last
         self.player.draw(screen, self.camera.apply(self.player))
 
+    def end_game(self):
+        # Game over
+        self.game_over = True
+
+        # Reset the game time
+        self.game_over_time = self.director.scene_elapsed_time + 5000
+
+    def on_load(self):
+        # Play music on scene load
+        self.music.play_and_loop()
+
     def on_exit(self):
+        # Reset all the variables on the scene exiting
+
         self.player_movement = {'left': False, 'right': False, 'jump': False}
 
         self.level = Level(self.level_config['file'], self.level_config['width_constant'], self.level_config['object_dict'])
@@ -596,6 +644,8 @@ class AdvancedPlatformScene(base.Scene):
         self.player.rect.x, self.player.rect.y = self.level_config['player'][0].rect.x, self.level_config['player'][0].rect.y
 
         self.game_over = False
+
+        self.music.stop()
 
 
 # /===================================/
@@ -618,7 +668,9 @@ class LevelConfig:
 
 
 # /===================================/
-#  Physics object class
+#  Physics object class (actually enemy but too many references to change)
+#  Was originally going to be a physics classes for other objects to inherit
+#  But because I'm lazy it's just an enemy class
 # /===================================/
 
 
@@ -630,6 +682,7 @@ class PhysicsObject(DrawableGameObject):
         self.delta_y = 0
 
     def _update(self):
+        # Make enemies green for no reason
         self.surface.fill(base.Colors.GREEN)
 
     def duplicate(self):
@@ -638,19 +691,25 @@ class PhysicsObject(DrawableGameObject):
     def on_update(self, collision_objects):
         self.delta_x = 0
 
+        # Synatic sugar
         player_x = self.scene.player.rect.x
         self_x = self.rect.x
         diff = abs(player_x - self_x)
 
-        if player_x < self_x and 250 > diff > 2:
+        # If player is less than 350 units away but more than 2
+        # If it was less than 2 I had errors with infinite juggling
+        if player_x < self_x and 350 > diff > 2:
             self.delta_x = -200 * self.scene.director.delta_time
-        elif player_x > self_x and 250 > diff > 2:
+        elif player_x > self_x and 350 > diff > 2:
             self.delta_x = 200 * self.scene.director.delta_time
 
+        # If not grounded then apply gravity
         if not self.grounded:
             self.delta_y += 25 * self.scene.director.delta_time
 
         self.grounded = False
+
+        # Standard movement stuff from player
 
         self.rect.x += int(self.delta_x)
 
@@ -675,10 +734,23 @@ class PhysicsObject(DrawableGameObject):
                 self.delta_y = 0
 
 
+# /===================================/
+#  Dynamic text class
+# /===================================/
+
+
 class DynamicText(base.Text):
     def update_text(self, text):
         self._caption = str(text)
         self._update()
+
+
+# /===================================/
+#  Animation class
+#  I love this class, inspired from a blog post
+#  But I understand everything it's doing
+#  Some more exceptions could be added but it's just me coding so who cares
+# /===================================/
 
 
 class Animation:
@@ -687,6 +759,9 @@ class Animation:
         self.durations = []
         self.start_times = []
 
+        # 2 is stopped
+        # 1 is playing
+        # 0 is paused
         self._state = 2
         self.loop = False
         self.rate = 1
@@ -695,50 +770,62 @@ class Animation:
         self.pause_start_time = 0
 
         self.num_frames = len(frames)
-        # Add exception for length
 
         for i in range(self.num_frames):
             frame = frames[i]
 
-            # Add exceptions here
-
+            # If the frame is a file reference load its image
             if type(frame[0]) == list:
                 frame = (pygame.image.load(os.path.join(*frame[0])).convert_alpha(), frame[1])
             elif frame[0] is None:
                 frame = (pygame.Surface((0, 0)), frame[1])
 
+            # Append surface and duration to lists
             self.images.append(frame[0])
             self.durations.append(frame[1])
 
+        # Get the start times once all frame loaded
         self.start_times = self.get_start_times()
 
     def get_start_times(self):
         start_times = [0]
 
+        # Just get the last value and add the current value
+        # It just kind of skips along
+        # [x, x + y, (x + y) + z] etc
         for i in range(self.num_frames):
             start_times.append(start_times[-1] + self.durations[i])
 
         return start_times
 
     def get_elapsed(self):
+        # If stopped we have no running time
         if self._state == 2:
             return 0
 
+        # If playing we use a relative time reference
         if self._state == 1:
             elapsed = (time.time() - self.play_start_time) * self.rate
+        # If paused we have to use a pause time because its a difference state
         elif self._state == 0:
             elapsed = (self.pause_start_time - self.play_start_time) * self.rate
 
+        # If we loop then we reset the elapsed when rerun/loop the animation
         if self.loop:
             elapsed = elapsed % self.start_times[-1]
         else:
+            # Basically a combined min/max
             elapsed = base.middle_value(0, elapsed, self.start_times[-1])
 
+        # Again some rounding thing?
         elapsed += 0.00001
 
         return elapsed
 
+    # Not sure if ever used
     def set_elapsed(self, elapsed):
+        # From blog post, not sure what its for
+        # Apparently rounding errors
         elapsed += 0.00001
 
         if self.loop:
@@ -753,15 +840,19 @@ class Animation:
             self.state = 0
             self.pause_start_time = right_now
 
+    # Used as property because of some weird recursive errors
     elapsed = property(get_elapsed, set_elapsed)
 
     def get_state(self):
+        # If done return stopped state
         if self.is_finished():
             self._state = 2
 
         return self._state
 
     def set_state(self, state):
+        # If state not allowed
+        # This method is also used to play and pause if need be
         if state not in (0, 1, 2):
             raise Exception('WRONG STATE')
         if state == 1:
@@ -771,44 +862,100 @@ class Animation:
         elif state == 2:
             self.stop()
 
+    # Again a property because of some recursive stuff
     state = property(get_state, set_state)
 
     def get_surface(self):
+        # Get the surface for the current time
+        # Basically how you actually blit the animation
+        # We don't keep an active running count of time
+        # We only check from relative start times when we actually need the frame
         frame_number = base.find_start_times(self.start_times, self.get_elapsed())
         return self.images[frame_number]
 
     def is_finished(self):
+        # If we don't loop and our elapsed is greater than our last frame time
         return not self.loop and self.elapsed >= self.start_times[-1]
 
     def play(self):
+        # Relative time
         start_time = time.time()
 
+        # If playing and finished, reset our start time and play again
         if self._state == 1:
             if self.is_finished():
                 self.play_start_time = start_time
+        # If paused, reset the play start time based on the pause start time and stuff whilst retaining relative times
         elif self._state == 0:
             self.play_start_time = start_time - (self.pause_start_time - self.play_start_time)
+        # If stopped just reset time altogether
         elif self._state == 2:
             self.play_start_time = start_time
 
+        # We are playing now
         self._state = 1
 
     def pause(self):
+        # Relative time
         start_time = time.time()
 
+        # If paused we need do nothing
         if self._state == 0:
             return
+        # If playing reset paused time
         elif self._state == 1:
             self.pause_start_time = start_time
+        # If stopped reset all the times
         elif self._state == 2:
             right_now = time.time()
             self.play_start_time = right_now
             self.pause_start_time = right_now
 
+        # We paused now
         self._state = 0
 
     def stop(self):
+        # If we're stopped we don't need to stop
+        # (duh)
         if self._state == 2:
             return
 
+        # ME STOP NOW
         self._state = 2
+
+
+# /===================================/
+#  End block class
+#  Placeholder invisible block to use for collision detection
+#  To end level
+#  Could have been a better way but I'm too lazy
+# /===================================/
+
+
+class EndBlock(DrawableGameObject):
+    def __init__(self, scene=None, x=0, y=0, width=100, height=100):
+        super().__init__(scene, x, y, width, height)
+
+    def _update(self):
+        pass
+
+    def duplicate(self):
+        return EndBlock(self.scene, self.x, self.y, self.width, self.height)
+
+    def draw(self, screen, optional_rect=None):
+        pass
+
+
+# /===================================/
+#  Background music class
+# /===================================/
+
+
+class BackgroundMusic(pygame.mixer.Sound):
+    def __init__(self, file):
+        # Load file
+        super().__init__(os.path.join(*file))
+
+    def play_and_loop(self):
+        # Play and loop
+        super().play(-1)
